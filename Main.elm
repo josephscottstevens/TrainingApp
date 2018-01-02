@@ -7,6 +7,7 @@ import Json.Decode as Decode
 import Mouse exposing (Position)
 
 
+main : Program Never Model Msg
 main =
     Html.program
         { init = init
@@ -22,19 +23,13 @@ main =
 
 type alias Model =
     { position : Position
-    , drag : Maybe Drag
-    }
-
-
-type alias Drag =
-    { start : Position
-    , current : Position
+    , dragOffset : Maybe Position
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model (Position 200 200) Nothing, Cmd.none )
+    ( emptyModel, Cmd.none )
 
 
 
@@ -49,20 +44,35 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( updateHelp msg model, Cmd.none )
-
-
-updateHelp : Msg -> Model -> Model
-updateHelp msg ({ position, drag } as model) =
     case msg of
-        DragStart xy ->
-            Model position (Just (Drag xy xy))
+        DragStart position ->
+            { model
+                | position = position
+                , dragOffset =
+                    Just
+                        { x = position.x - model.position.x
+                        , y = position.y - model.position.y
+                        }
+            }
+                ! []
 
-        DragAt xy ->
-            Model position (Maybe.map (\{ start } -> Drag start xy) drag)
+        DragAt position ->
+            { model | position = position } ! []
 
-        DragEnd _ ->
-            Model (getPosition model) Nothing
+        DragEnd position ->
+            { model
+                | position =
+                    case model.dragOffset of
+                        Just t ->
+                            { x = model.position.x - t.x
+                            , y = model.position.y - t.y
+                            }
+
+                        Nothing ->
+                            position
+                , dragOffset = Nothing
+            }
+                ! []
 
 
 
@@ -71,7 +81,7 @@ updateHelp msg ({ position, drag } as model) =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.drag of
+    case model.dragOffset of
         Nothing ->
             Sub.none
 
@@ -83,35 +93,12 @@ subscriptions model =
 -- VIEW
 
 
-(=>) =
-    (,)
-
-
 view : Model -> Html Msg
 view model =
-    let
-        realPosition =
-            getPosition model
-    in
-        div
-            [ onMouseDown
-            , style
-                [ "background-color" => "#3C8D2F"
-                , "cursor" => "move"
-                , "width" => "100px"
-                , "height" => "100px"
-                , "border-radius" => "4px"
-                , "position" => "absolute"
-                , "left" => px realPosition.x
-                , "top" => px realPosition.y
-                , "color" => "white"
-                , "display" => "flex"
-                , "align-items" => "center"
-                , "justify-content" => "center"
-                ]
-            ]
-            [ text "Drag Me!"
-            ]
+    div
+        [ onMouseDown, getStyle model ]
+        [ text "Drag Me!"
+        ]
 
 
 px : Int -> String
@@ -119,18 +106,44 @@ px number =
     toString number ++ "px"
 
 
-getPosition : Model -> Position
-getPosition { position, drag } =
-    case drag of
-        Nothing ->
-            position
+getStyle model =
+    let
+        ( x, y ) =
+            getPos model
+    in
+        style
+            [ ( "background-color", "#3C8D2F" )
+            , ( "cursor", "move" )
+            , ( "width", "100px" )
+            , ( "height", "100px" )
+            , ( "border-radius", "4px" )
+            , ( "position", "absolute" )
+            , ( "left", px x )
+            , ( "top", px y )
+            , ( "color", "white" )
+            , ( "display", "flex" )
+            , ( "align-items", "center" )
+            , ( "justify-content", "center" )
+            ]
 
-        Just { start, current } ->
-            Position
-                (position.x + current.x - start.x)
-                (position.y + current.y - start.y)
+
+getPos : Model -> ( Int, Int )
+getPos model =
+    case model.dragOffset of
+        Nothing ->
+            ( model.position.x, model.position.y )
+
+        Just t ->
+            ( model.position.x - t.x, model.position.y - t.y )
 
 
 onMouseDown : Attribute Msg
 onMouseDown =
     on "mousedown" (Decode.map DragStart Mouse.position)
+
+
+emptyModel : Model
+emptyModel =
+    { position = Position 200 200
+    , dragOffset = Nothing
+    }
