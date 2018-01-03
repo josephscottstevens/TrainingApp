@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (on)
+import Html.Events exposing (on, onMouseUp)
 import Json.Decode as Decode
 import Mouse exposing (Position)
 
@@ -24,12 +24,34 @@ main =
 type alias Model =
     { position : Position
     , dragOffset : Maybe Position
+    , items : List String
     }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( emptyModel, Cmd.none )
+
+
+
+-- VIEW
+
+
+redBox =
+    style
+        [ ( "width", "100px" )
+        , ( "height", "100px" )
+        , ( "background-color", "red" )
+        ]
+
+
+view : Model -> Html Msg
+view model =
+    div []
+        [ div [ redBox, onMouseUp Append ] [ text "t" ]
+        , div [] (List.map (\t -> div [] [ text t ]) model.items)
+        , div [ onMouseDown, drawAt model ] [ text "Drag Me!" ]
+        ]
 
 
 
@@ -40,6 +62,7 @@ type Msg
     = DragStart Position
     | DragAt Position
     | DragEnd Position
+    | Append
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -74,6 +97,9 @@ update msg model =
             }
                 ! []
 
+        Append ->
+            { model | items = "test" :: model.items } ! []
+
 
 
 -- SUBSCRIPTIONS
@@ -90,15 +116,7 @@ subscriptions model =
 
 
 
--- VIEW
-
-
-view : Model -> Html Msg
-view model =
-    div
-        [ onMouseDown, getStyle model ]
-        [ text "Drag Me!"
-        ]
+-- HELPER FUNCTIONS
 
 
 px : Int -> String
@@ -106,25 +124,26 @@ px number =
     toString number ++ "px"
 
 
-getStyle model =
+drawAt model =
     let
         ( x, y ) =
             getPos model
     in
-        style
-            [ ( "background-color", "#3C8D2F" )
-            , ( "cursor", "move" )
-            , ( "width", "100px" )
-            , ( "height", "100px" )
-            , ( "border-radius", "4px" )
-            , ( "position", "absolute" )
-            , ( "left", px x )
-            , ( "top", px y )
-            , ( "color", "white" )
-            , ( "display", "flex" )
-            , ( "align-items", "center" )
-            , ( "justify-content", "center" )
-            ]
+    style
+        [ ( "background-color", "#3C8D2F" )
+        , ( "cursor", "move" )
+        , ( "width", "100px" )
+        , ( "height", "100px" )
+        , ( "border-radius", "4px" )
+        , ( "position", "absolute" )
+        , ( "left", px x )
+        , ( "top", px y )
+        , ( "color", "white" )
+        , ( "display", "flex" )
+        , ( "align-items", "center" )
+        , ( "justify-content", "center" )
+        , ( "user-select", "none" )
+        ]
 
 
 getPos : Model -> ( Int, Int )
@@ -146,4 +165,5 @@ emptyModel : Model
 emptyModel =
     { position = Position 200 200
     , dragOffset = Nothing
+    , items = []
     }
