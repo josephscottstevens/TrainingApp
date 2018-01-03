@@ -2,168 +2,106 @@ module Main exposing (main)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (on, onMouseUp)
-import Json.Decode as Decode
-import Mouse exposing (Position)
+import Html5.DragDrop as DragDrop
 
 
-main : Program Never Model Msg
-main =
-    Html.program
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
-
--- MODEL
+type Position
+    = Up
+    | Middle
+    | Down
 
 
 type alias Model =
-    { position : Position
-    , dragOffset : Maybe Position
-    , items : List String
+    { data : { count : Int, position : Position }
+    , dragDrop : DragDrop.Model Int Position
     }
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( emptyModel, Cmd.none )
-
-
-
--- VIEW
-
-
-redBox =
-    style
-        [ ( "width", "100px" )
-        , ( "height", "100px" )
-        , ( "background-color", "red" )
-        ]
-
-
-view : Model -> Html Msg
-view model =
-    div []
-        [ div [ redBox, onMouseUp Append ] [ text "t" ]
-        , div [] (List.map (\t -> div [] [ text t ]) model.items)
-        , div [ onMouseDown, drawAt model ] [ text "Drag Me!" ]
-        ]
-
-
-
--- UPDATE
 
 
 type Msg
-    = DragStart Position
-    | DragAt Position
-    | DragEnd Position
-    | Append
+    = DragDropMsg (DragDrop.Msg Int Position)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+model =
+    { data = { count = 0, position = Up }
+    , dragDrop = DragDrop.init
+    }
+
+
 update msg model =
     case msg of
-        DragStart position ->
+        DragDropMsg msg_ ->
+            let
+                ( model_, result ) =
+                    DragDrop.update msg_ model.dragDrop
+            in
             { model
-                | position = position
-                , dragOffset =
-                    Just
-                        { x = position.x - model.position.x
-                        , y = position.y - model.position.y
-                        }
-            }
-                ! []
-
-        DragAt position ->
-            { model | position = position } ! []
-
-        DragEnd position ->
-            { model
-                | position =
-                    case model.dragOffset of
-                        Just t ->
-                            { x = model.position.x - t.x
-                            , y = model.position.y - t.y
-                            }
-
+                | dragDrop = model_
+                , data =
+                    case result of
                         Nothing ->
-                            position
-                , dragOffset = Nothing
+                            model.data
+
+                        Just ( count, position ) ->
+                            { count = count + 1, position = position }
             }
                 ! []
 
-        Append ->
-            { model | items = "test" :: model.items } ! []
+
+divStyle =
+    style [ ( "border", "1px solid black" ), ( "padding", "50px" ), ( "text-align", "center" ) ]
 
 
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    case model.dragOffset of
-        Nothing ->
-            Sub.none
-
-        Just _ ->
-            Sub.batch [ Mouse.moves DragAt, Mouse.ups DragEnd ]
-
-
-
--- HELPER FUNCTIONS
-
-
-px : Int -> String
-px number =
-    toString number ++ "px"
-
-
-drawAt model =
+view model =
     let
-        ( x, y ) =
-            getPos model
+        dropId =
+            DragDrop.getDropId model.dragDrop
     in
-    style
-        [ ( "background-color", "#3C8D2F" )
-        , ( "cursor", "move" )
-        , ( "width", "100px" )
-        , ( "height", "100px" )
-        , ( "border-radius", "4px" )
-        , ( "position", "absolute" )
-        , ( "left", px x )
-        , ( "top", px y )
-        , ( "color", "white" )
-        , ( "display", "flex" )
-        , ( "align-items", "center" )
-        , ( "justify-content", "center" )
-        , ( "user-select", "none" )
+    div []
+        [ viewDiv Up model.data dropId
+        , viewDiv Middle model.data dropId
+        , viewDiv Down model.data dropId
         ]
 
 
-getPos : Model -> ( Int, Int )
-getPos model =
-    case model.dragOffset of
+isNothing maybe =
+    case maybe of
+        Just _ ->
+            False
+
         Nothing ->
-            ( model.position.x, model.position.y )
-
-        Just t ->
-            ( model.position.x - t.x, model.position.y - t.y )
+            True
 
 
-onMouseDown : Attribute Msg
-onMouseDown =
-    on "mousedown" (Decode.map DragStart Mouse.position)
+viewDiv position data dropId =
+    let
+        highlight =
+            if dropId |> Maybe.map ((==) position) |> Maybe.withDefault False then
+                [ style [ ( "background-color", "cyan" ) ] ]
+            else
+                []
+    in
+    div
+        (divStyle
+            :: highlight
+            ++ (if data.position /= position then
+                    DragDrop.droppable DragDropMsg position
+                else
+                    []
+               )
+        )
+        (if data.position == position then
+            [ img (src "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg" :: width 100 :: DragDrop.draggable DragDropMsg data.count) []
+            , text (toString data.count)
+            ]
+         else
+            []
+        )
 
 
-emptyModel : Model
-emptyModel =
-    { position = Position 200 200
-    , dragOffset = Nothing
-    , items = []
-    }
+main =
+    program
+        { init = ( model, Cmd.none )
+        , update = update
+        , view = view
+        , subscriptions = always Sub.none
+        }
