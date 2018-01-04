@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html5.DragDrop as DragDrop
+import DragDrop
 
 
 type Position
@@ -67,7 +67,7 @@ divStyle =
     [ style [ ( "border", "1px solid black" ), ( "padding", "50px" ), ( "text-align", "center" ) ] ]
 
 
-viewDiv : Position -> { a | position : Position, count : Int } -> Maybe Position -> Html Msg
+viewDiv : Position -> { position : Position, count : Int } -> Maybe Position -> Html Msg
 viewDiv position data dropId =
     let
         highlight =
