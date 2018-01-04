@@ -20,10 +20,14 @@ type alias Model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ img (src url :: width 100 :: (draggable 3)) []
-        , div [] (List.map (viewDiv model) model.dragItems)
-        ]
+    let
+        len =
+            1 + List.length model.dragItems
+    in
+        div []
+            [ img (src url :: width 100 :: (draggable len)) []
+            , div [] (List.map (viewDiv model) model.dragItems)
+            ]
 
 
 viewDiv : Model -> Int -> Html Msg
@@ -86,7 +90,7 @@ update msg model =
             { model | dragId = Just dragId } ! []
 
         Drop dropId ->
-            { model | dragId = Nothing, dropId = Nothing } ! []
+            { model | dragId = Nothing, dragItems = dropId :: model.dragItems } ! []
 
 
 main : Program Never Model Msg
