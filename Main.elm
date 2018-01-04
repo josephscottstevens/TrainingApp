@@ -1,7 +1,7 @@
 module Main exposing (main)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html exposing (Html, program, div, img, text)
+import Html.Attributes exposing (src, style, width)
 import DragDrop
 
 
@@ -60,10 +60,10 @@ viewDiv : Int -> { dropId : Int, dragId : Int } -> Maybe Int -> Html Msg
 viewDiv id data maybeDropId =
     let
         dropStyle =
-            if data.dropId /= id then
-                DragDrop.droppable DragDropMsg id
-            else
+            if data.dropId == id then
                 []
+            else
+                DragDrop.droppable DragDropMsg id
 
         divStyle =
             [ style

@@ -1,8 +1,8 @@
 module DragDrop exposing (Model, init, Msg, update, updateSticky, draggable, droppable, getDragId, getDropId)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html exposing (Attribute)
+import Html.Attributes exposing (attribute)
+import Html.Events exposing (on, onWithOptions)
 import Json.Decode as Json
 
 
