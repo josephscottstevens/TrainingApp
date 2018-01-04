@@ -56,28 +56,26 @@ view model =
             ]
 
 
-divStyle : List (Attribute msg)
-divStyle =
-    [ style [ ( "border", "1px solid black" ), ( "padding", "50px" ), ( "text-align", "center" ) ] ]
-
-
 viewDiv : Int -> { dropId : Int, dragId : Int } -> Maybe Int -> Html Msg
 viewDiv id data maybeDropId =
     let
-        highlight =
-            if maybeDropId == Just id then
-                [ style [ ( "background-color", "cyan" ) ] ]
-            else
-                []
-
-        droppable =
+        dropStyle =
             if data.dropId /= id then
                 DragDrop.droppable DragDropMsg id
             else
                 []
 
-        attributes =
-            divStyle ++ highlight ++ droppable
+        divStyle =
+            [ style
+                [ ( "border", "1px solid black" )
+                , ( "padding", "50px" )
+                , ( "text-align", "center" )
+                , if maybeDropId == Just id then
+                    ( "background-color", "cyan" )
+                  else
+                    ( "", "" )
+                ]
+            ]
 
         children =
             if data.dropId == id then
@@ -87,7 +85,7 @@ viewDiv id data maybeDropId =
             else
                 []
     in
-        div attributes children
+        div (divStyle ++ dropStyle) children
 
 
 main : Program Never Model Msg
