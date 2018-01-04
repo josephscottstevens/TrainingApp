@@ -11,33 +11,31 @@ init =
 
 
 type alias Model =
-    { dragItem : Maybe DragDrop.DragItem
+    { dragItems : List Int
+    , activeItemId : Maybe Int
     , dragDrop : DragDrop.Model
     }
 
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ viewDiv 0 model.dragItem model.dragDrop.dragItem
-        , viewDiv 1 model.dragItem model.dragDrop.dragItem
-        , viewDiv 2 model.dragItem model.dragDrop.dragItem
-        ]
+    div [] (List.map (viewDiv model.activeItemId) model.dragItems)
 
 
-viewDiv : Int -> Maybe DragDrop.DragItem -> Maybe DragDrop.DragItem -> Html Msg
-viewDiv itemId dragItem activeDragItem =
+viewDiv : Maybe Int -> Int -> Html Msg
+viewDiv activeDragItem itemId =
     let
         isActive =
-            Just itemId == Maybe.map .dragId activeDragItem
+            Just itemId == activeDragItem
 
         dropStyle =
             if isActive then
                 []
             else
-                case dragItem of
+                case activeDragItem of
                     Just t ->
-                        DragDrop.droppable DragDropMsg t
+                        -- TODO, might be backwards?
+                        DragDrop.droppable DragDropMsg t itemId
 
                     Nothing ->
                         []
@@ -59,10 +57,10 @@ viewDiv itemId dragItem activeDragItem =
 
         children =
             if isActive then
-                case dragItem of
+                case activeDragItem of
                     Just t ->
                         [ img (src url :: width 100 :: DragDrop.draggable DragDropMsg t) []
-                        , text (toString t.dragId)
+                        , text ("activeId" ++ toString activeDragItem)
                         ]
 
                     Nothing ->
@@ -82,13 +80,13 @@ update msg model =
     case msg of
         DragDropMsg dragMsg ->
             let
-                ( dragDrop, dragItem ) =
-                    DragDrop.update dragMsg model.dragDrop
+                ( dragDrop, activeItemId ) =
+                    DragDrop.update dragMsg model.dragDrop model.activeItemId
 
                 newModel =
                     { model
                         | dragDrop = dragDrop
-                        , dragItem = dragItem
+                        , activeItemId = activeItemId
                     }
             in
                 ( newModel, Cmd.none )
@@ -106,6 +104,7 @@ main =
 
 emptyModel : Model
 emptyModel =
-    { dragItem = Just { dragId = 0, dropId = 0 }
-    , dragDrop = DragDrop.init { dragId = 0, dropId = 0 }
+    { dragItems = [ 0, 1, 2 ]
+    , activeItemId = Just 0
+    , dragDrop = DragDrop.init
     }
