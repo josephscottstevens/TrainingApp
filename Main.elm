@@ -19,7 +19,10 @@ type alias Model =
 
 view : Model -> Html Msg
 view model =
-    div [] (List.map (viewDiv model.activeItem) model.dragItems)
+    div []
+        [ img (src url :: width 100 :: (draggable 3)) []
+        , div [] (List.map (viewDiv model.activeItem) model.dragItems)
+        ]
 
 
 viewDiv : Maybe Int -> Int -> Html Msg
@@ -50,9 +53,6 @@ viewDiv activeDragItem itemId =
                     ( "", "" )
                 ]
             ]
-
-        url =
-            "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
 
         children =
             if isActive then
@@ -132,3 +132,7 @@ droppable dragId dropId =
             Drop dragId dropId
     , attribute "ondragover" "event.stopPropagation(); event.preventDefault();"
     ]
+
+
+url =
+    "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
