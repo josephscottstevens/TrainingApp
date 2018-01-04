@@ -96,7 +96,7 @@ getDragId model =
         Dragging dragId ->
             Just dragId
 
-        DraggedOver dragId dropId ->
+        DraggedOver dragId _ ->
             Just dragId
 
 
@@ -106,8 +106,8 @@ getDropId model =
         NotDragging ->
             Nothing
 
-        Dragging dragId ->
+        Dragging _ ->
             Nothing
 
-        DraggedOver dragId dropId ->
+        DraggedOver _ dropId ->
             Just dropId
