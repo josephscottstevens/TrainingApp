@@ -49,11 +49,6 @@ update msg model =
                     ! []
 
 
-divStyle : Attribute msg
-divStyle =
-    style [ ( "border", "1px solid black" ), ( "padding", "50px" ), ( "text-align", "center" ) ]
-
-
 view : Model -> Html Msg
 view model =
     let
@@ -67,6 +62,11 @@ view model =
             ]
 
 
+divStyle : List (Attribute msg)
+divStyle =
+    [ style [ ( "border", "1px solid black" ), ( "padding", "50px" ), ( "text-align", "center" ) ] ]
+
+
 viewDiv : Position -> { a | position : Position, count : Int } -> Maybe Position -> Html Msg
 viewDiv position data dropId =
     let
@@ -75,23 +75,25 @@ viewDiv position data dropId =
                 [ style [ ( "background-color", "cyan" ) ] ]
             else
                 []
-    in
-        div
-            (divStyle
-                :: highlight
-                ++ (if data.position /= position then
-                        DragDrop.droppable DragDropMsg position
-                    else
-                        []
-                   )
-            )
-            (if data.position == position then
+
+        droppable =
+            if data.position /= position then
+                DragDrop.droppable DragDropMsg position
+            else
+                []
+
+        attributes =
+            divStyle ++ highlight ++ droppable
+
+        children =
+            if data.position == position then
                 [ img (src "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg" :: width 100 :: DragDrop.draggable DragDropMsg data.count) []
                 , text (toString data.count)
                 ]
-             else
+            else
                 []
-            )
+    in
+        div attributes children
 
 
 main : Program Never Model Msg
