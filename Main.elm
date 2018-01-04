@@ -5,25 +5,19 @@ import Html.Attributes exposing (..)
 import DragDrop
 
 
-type Position
-    = Up
-    | Middle
-    | Down
-
-
 type alias Model =
-    { data : { dragId : Int, dropId : Position }
-    , dragDrop : DragDrop.Model Int Position
+    { data : { dragId : Int, dropId : Int }
+    , dragDrop : DragDrop.Model Int Int
     }
 
 
 type Msg
-    = DragDropMsg (DragDrop.Msg Int Position)
+    = DragDropMsg (DragDrop.Msg Int Int)
 
 
 model : Model
 model =
-    { data = { dragId = 0, dropId = Up }
+    { data = { dragId = 0, dropId = 0 }
     , dragDrop = DragDrop.init
     }
 
@@ -56,9 +50,9 @@ view model =
             DragDrop.getDropId model.dragDrop
     in
         div []
-            [ viewDiv Up model.data dropId
-            , viewDiv Middle model.data dropId
-            , viewDiv Down model.data dropId
+            [ viewDiv 0 model.data dropId
+            , viewDiv 1 model.data dropId
+            , viewDiv 2 model.data dropId
             ]
 
 
@@ -67,7 +61,7 @@ divStyle =
     [ style [ ( "border", "1px solid black" ), ( "padding", "50px" ), ( "text-align", "center" ) ] ]
 
 
-viewDiv : Position -> { dropId : Position, dragId : Int } -> Maybe Position -> Html Msg
+viewDiv : Int -> { dropId : Int, dragId : Int } -> Maybe Int -> Html Msg
 viewDiv position data dropId =
     let
         highlight =
