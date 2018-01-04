@@ -5,6 +5,11 @@ import Html.Attributes exposing (src, style, width)
 import DragDrop
 
 
+init : ( Model, Cmd Msg )
+init =
+    ( emptyModel, Cmd.none )
+
+
 type alias DragItem =
     { dragId : Int
     , dropId : Int
@@ -51,23 +56,18 @@ viewDiv id dragItem maybeDropId =
                 ]
             ]
 
+        url =
+            "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
+
         children =
             if dragItem.dropId == id then
-                [ img (src "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg" :: width 100 :: DragDrop.draggable DragDropMsg dragItem.dragId) []
+                [ img (src url :: width 100 :: DragDrop.draggable DragDropMsg dragItem.dragId) []
                 , text (toString dragItem.dragId)
                 ]
             else
                 []
     in
         div (divStyle ++ dropStyle) children
-
-
-init : ( Model, Cmd Msg )
-init =
-    { dragItem = { dragId = 0, dropId = 0 }
-    , dragDrop = DragDrop.init
-    }
-        ! []
 
 
 type Msg
@@ -103,3 +103,10 @@ main =
         , view = view
         , subscriptions = always Sub.none
         }
+
+
+emptyModel : Model
+emptyModel =
+    { dragItem = { dragId = 0, dropId = 0 }
+    , dragDrop = DragDrop.init
+    }
