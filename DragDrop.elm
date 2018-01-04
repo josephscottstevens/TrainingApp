@@ -5,8 +5,8 @@ module DragDrop
         , init
         , Msg
         , update
-        , getDragId
-        , getDropId
+          --, getDragId
+          --, getDropId
         , draggable
         , droppable
         )
@@ -31,88 +31,63 @@ type State
 
 type alias Model =
     { state : State
-    , dragId : Int
-    , dropId : Int
+    , dragItem : Maybe DragItem
     }
 
 
-init : Model
-init =
+init : DragItem -> Model
+init dragItem =
     { state = NotDragging
-    , dragId = 0
-    , dropId = 0
+    , dragItem = Just dragItem
     }
 
 
 type Msg
-    = DragStart DragItem
+    = DragStart DragItem Int
     | DragEnd
-    | DragEnter DragItem
-    | DragLeave DragItem
-    | Drop DragItem
+    | DragEnter DragItem Int Int
+    | DragLeave DragItem Int
+    | Drop DragItem Int Int
 
 
 update : Msg -> Model -> ( Model, Maybe DragItem )
 update msg model =
     case msg of
-        DragStart t ->
-            ( { model | state = Dragging, dragId = t.dragId }, Nothing )
+        DragStart dragItem dragId ->
+            ( { model | state = Dragging, dragItem = Just { dragItem | dragId = dragId } }, Nothing )
 
         DragEnd ->
             ( { model | state = NotDragging }, Nothing )
 
-        DragEnter t ->
-            ( { model | state = DraggedOver, dragId = t.dragId, dropId = t.dropId }, Nothing )
+        DragEnter dragItem dragId dropId ->
+            ( { model | state = DraggedOver, dragItem = Just { dragItem | dragId = dragId, dropId = dropId } }, Nothing )
 
-        DragLeave t ->
-            if t.dropId == model.dropId then
-                ( { model | state = Dragging, dropId = t.dropId }, Nothing )
+        DragLeave dragItem dropId ->
+            if dropId == dragItem.dropId then
+                ( { model | state = Dragging, dragItem = Just { dragItem | dropId = dropId } }, Nothing )
             else
                 ( model, Nothing )
 
-        Drop t ->
-            ( { model | state = NotDragging }, Just { dragId = t.dragId, dropId = t.dropId } )
+        Drop dragItem dragId dropId ->
+            ( { model | state = NotDragging }, Just { dragId = dragId, dropId = dropId } )
 
 
 draggable : (Msg -> msg) -> DragItem -> List (Attribute msg)
-draggable wrap drag =
+draggable wrap dragItem =
     [ attribute "draggable" "true"
-    , on "dragstart" <| Json.succeed <| wrap <| DragStart drag
+    , on "dragstart" <| Json.succeed <| wrap <| DragStart dragItem dragItem.dragId
     , on "dragend" <| Json.succeed <| wrap <| DragEnd
     , attribute "ondragstart" "event.dataTransfer.setData('text/plain', '');"
     ]
 
 
 droppable : (Msg -> msg) -> DragItem -> List (Attribute msg)
-droppable wrap dropId =
-    [ on "dragenter" <| Json.succeed <| wrap <| DragEnter dropId
-    , on "dragleave" <| Json.succeed <| wrap <| DragLeave dropId
-    , onWithOptions "drop" { stopPropagation = True, preventDefault = True } <| Json.succeed <| wrap <| Drop dropId
+droppable wrap dragItem =
+    [ on "dragenter" <| Json.succeed <| wrap <| DragEnter dragItem dragItem.dragId dragItem.dropId
+    , on "dragleave" <| Json.succeed <| wrap <| DragLeave dragItem dragItem.dropId
+    , onWithOptions "drop" { stopPropagation = True, preventDefault = True } <|
+        Json.succeed <|
+            wrap <|
+                Drop dragItem dragItem.dragId dragItem.dropId
     , attribute "ondragover" "event.stopPropagation(); event.preventDefault();"
     ]
-
-
-getDragId : Model -> Maybe Int
-getDragId model =
-    case model.state of
-        NotDragging ->
-            Nothing
-
-        Dragging ->
-            Just model.dragId
-
-        DraggedOver ->
-            Just model.dragId
-
-
-getDropId : Model -> Maybe Int
-getDropId model =
-    case model.state of
-        NotDragging ->
-            Nothing
-
-        Dragging ->
-            Nothing
-
-        DraggedOver ->
-            Just model.dropId

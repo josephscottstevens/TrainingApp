@@ -11,39 +11,43 @@ init =
 
 
 type alias Model =
-    { dragItem : DragDrop.DragItem
+    { dragItem : Maybe DragDrop.DragItem
     , dragDrop : DragDrop.Model
     }
 
 
 view : Model -> Html Msg
 view model =
-    let
-        dropId =
-            DragDrop.getDropId model.dragDrop
-    in
-        div []
-            [ viewDiv 0 model.dragItem dropId
-            , viewDiv 1 model.dragItem dropId
-            , viewDiv 2 model.dragItem dropId
-            ]
+    div []
+        [ viewDiv 0 model.dragItem model.dragDrop.dragItem
+        , viewDiv 1 model.dragItem model.dragDrop.dragItem
+        , viewDiv 2 model.dragItem model.dragDrop.dragItem
+        ]
 
 
-viewDiv : Int -> DragDrop.DragItem -> Maybe DragDrop.DragItem -> Html Msg
+viewDiv : Int -> Maybe DragDrop.DragItem -> Maybe DragDrop.DragItem -> Html Msg
 viewDiv itemId dragItem activeDragItem =
     let
+        isActive =
+            Just itemId == Maybe.map .dragId activeDragItem
+
         dropStyle =
-            if Just dragItem == activeDragItem then
+            if isActive then
                 []
             else
-                DragDrop.droppable DragDropMsg
+                case dragItem of
+                    Just t ->
+                        DragDrop.droppable DragDropMsg t
+
+                    Nothing ->
+                        []
 
         divStyle =
             [ style
                 [ ( "border", "1px solid black" )
                 , ( "padding", "50px" )
                 , ( "text-align", "center" )
-                , if dragItem == Just activeDragItem then
+                , if isActive then
                     ( "background-color", "cyan" )
                   else
                     ( "", "" )
@@ -54,10 +58,15 @@ viewDiv itemId dragItem activeDragItem =
             "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
 
         children =
-            if dragItem == Just activeDragItem then
-                [ img (src url :: width 100 :: DragDrop.draggable DragDropMsg dragItem) []
-                , text (toString dragItem.dragId)
-                ]
+            if isActive then
+                case dragItem of
+                    Just t ->
+                        [ img (src url :: width 100 :: DragDrop.draggable DragDropMsg t) []
+                        , text (toString t.dragId)
+                        ]
+
+                    Nothing ->
+                        []
             else
                 []
     in
@@ -73,19 +82,13 @@ update msg model =
     case msg of
         DragDropMsg dragMsg ->
             let
-                ( dragDrop, result ) =
+                ( dragDrop, dragItem ) =
                     DragDrop.update dragMsg model.dragDrop
 
                 newModel =
                     { model
                         | dragDrop = dragDrop
-                        , dragItem =
-                            case result of
-                                Nothing ->
-                                    model.dragItem
-
-                                Just t ->
-                                    { dragId = t.dragId + 1, dropId = t.dropId }
+                        , dragItem = dragItem
                     }
             in
                 ( newModel, Cmd.none )
@@ -103,6 +106,6 @@ main =
 
 emptyModel : Model
 emptyModel =
-    { dragItem = { dragId = 0, dropId = 0 }
-    , dragDrop = DragDrop.init
+    { dragItem = Just { dragId = 0, dropId = 0 }
+    , dragDrop = DragDrop.init { dragId = 0, dropId = 0 }
     }
