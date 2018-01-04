@@ -37,10 +37,7 @@ viewDiv model itemId =
             Just itemId == model.dropId
 
         dropStyle =
-            if isActive then
-                []
-            else
-                droppable itemId
+            droppable itemId
 
         divStyle =
             [ style
