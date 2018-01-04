@@ -13,7 +13,8 @@ init =
 
 type alias Model =
     { dragItems : List Int
-    , activeItem : Maybe Int
+    , dragId : Maybe Int
+    , dropId : Maybe Int
     }
 
 
@@ -21,26 +22,21 @@ view : Model -> Html Msg
 view model =
     div []
         [ img (src url :: width 100 :: (draggable 3)) []
-        , div [] (List.map (viewDiv model.activeItem) model.dragItems)
+        , div [] (List.map (viewDiv model) model.dragItems)
         ]
 
 
-viewDiv : Maybe Int -> Int -> Html Msg
-viewDiv activeDragItem itemId =
+viewDiv : Model -> Int -> Html Msg
+viewDiv model itemId =
     let
         isActive =
-            Just itemId == activeDragItem
+            Just itemId == model.dropId
 
         dropStyle =
             if isActive then
                 []
             else
-                case activeDragItem of
-                    Just t ->
-                        droppable t itemId
-
-                    Nothing ->
-                        []
+                droppable itemId
 
         divStyle =
             [ style
@@ -56,14 +52,10 @@ viewDiv activeDragItem itemId =
 
         children =
             if isActive then
-                case activeDragItem of
-                    Just t ->
-                        [ img (src url :: width 100 :: draggable t) []
-                        , text ("activeId" ++ toString activeDragItem)
-                        ]
-
-                    Nothing ->
-                        []
+                [ img (src url :: width 100 :: draggable itemId) []
+                , text ("activeDragId" ++ toString model.dragId)
+                , text ("activeDropId" ++ toString model.dropId)
+                ]
             else
                 []
     in
@@ -73,28 +65,28 @@ viewDiv activeDragItem itemId =
 type Msg
     = DragStart Int
     | DragEnd
-    | DragEnter Int Int
+    | DragEnter Int
     | DragLeave Int
-    | Drop Int Int
+    | Drop Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DragStart dragId ->
-            { model | activeItem = Just dragId } ! []
+            { model | dragId = Just dragId } ! []
 
         DragEnd ->
-            { model | activeItem = Nothing } ! []
+            { model | dragId = Nothing, dropId = Nothing } ! []
 
-        DragEnter dragId dropId ->
-            { model | activeItem = Just dragId } ! []
+        DragEnter dropId ->
+            { model | dropId = Just dropId } ! []
 
         DragLeave dragId ->
-            { model | activeItem = Just dragId } ! []
+            { model | dragId = Just dragId } ! []
 
-        Drop dragId dropId ->
-            { model | activeItem = Just dragId } ! []
+        Drop dropId ->
+            { model | dragId = Nothing, dropId = Nothing } ! []
 
 
 main : Program Never Model Msg
@@ -110,7 +102,8 @@ main =
 emptyModel : Model
 emptyModel =
     { dragItems = [ 0, 1, 2 ]
-    , activeItem = Nothing
+    , dropId = Nothing
+    , dragId = Nothing
     }
 
 
@@ -123,13 +116,13 @@ draggable dragId =
     ]
 
 
-droppable : Int -> Int -> List (Attribute Msg)
-droppable dragId dropId =
-    [ on "dragenter" <| Json.succeed <| DragEnter dragId dropId
+droppable : Int -> List (Attribute Msg)
+droppable dropId =
+    [ on "dragenter" <| Json.succeed <| DragEnter dropId
     , on "dragleave" <| Json.succeed <| DragLeave dropId
     , onWithOptions "drop" { stopPropagation = True, preventDefault = True } <|
         Json.succeed <|
-            Drop dragId dropId
+            Drop dropId
     , attribute "ondragover" "event.stopPropagation(); event.preventDefault();"
     ]
 
