@@ -1,9 +1,15 @@
-module DragDrop exposing (Model, init, Msg, update, updateSticky, draggable, droppable, getDragId, getDropId)
+module DragDrop exposing (Model, init, Msg, update, draggable, droppable, getDragId, getDropId)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
 import Html.Events exposing (on, onWithOptions)
 import Json.Decode as Json
+
+
+type alias DragItem =
+    { dragId : Int
+    , dropId : Int
+    }
 
 
 type Model dragId dropId
@@ -26,43 +32,30 @@ type Msg dragId dropId
 
 
 update : Msg dragId dropId -> Model dragId dropId -> ( Model dragId dropId, Maybe ( dragId, dropId ) )
-update =
-    updateCommon False
-
-
-updateSticky : Msg dragId dropId -> Model dragId dropId -> ( Model dragId dropId, Maybe ( dragId, dropId ) )
-updateSticky =
-    updateCommon True
-
-
-updateCommon : Bool -> Msg dragId dropId -> Model dragId dropId -> ( Model dragId dropId, Maybe ( dragId, dropId ) )
-updateCommon sticky msg model =
-    case ( msg, model, sticky ) of
-        ( DragStart dragId, _, _ ) ->
+update msg model =
+    case ( msg, model ) of
+        ( DragStart dragId, _ ) ->
             ( Dragging dragId, Nothing )
 
-        ( DragEnd, DraggedOver dragId dropId, True ) ->
-            ( NotDragging, Just ( dragId, dropId ) )
-
-        ( DragEnd, _, _ ) ->
+        ( DragEnd, _ ) ->
             ( NotDragging, Nothing )
 
-        ( DragEnter dropId, Dragging dragId, _ ) ->
+        ( DragEnter dropId, Dragging dragId ) ->
             ( DraggedOver dragId dropId, Nothing )
 
-        ( DragEnter dropId, DraggedOver dragId _, _ ) ->
+        ( DragEnter dropId, DraggedOver dragId _ ) ->
             ( DraggedOver dragId dropId, Nothing )
 
-        ( DragLeave dropId_, DraggedOver dragId dropId, False ) ->
+        ( DragLeave dropId_, DraggedOver dragId dropId ) ->
             if dropId_ == dropId then
                 ( Dragging dragId, Nothing )
             else
                 ( model, Nothing )
 
-        ( Drop dropId, Dragging dragId, _ ) ->
+        ( Drop dropId, Dragging dragId ) ->
             ( NotDragging, Just ( dragId, dropId ) )
 
-        ( Drop dropId, DraggedOver dragId _, _ ) ->
+        ( Drop dropId, DraggedOver dragId _ ) ->
             ( NotDragging, Just ( dragId, dropId ) )
 
         _ ->
