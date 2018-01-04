@@ -6,6 +6,21 @@ import Html.Events exposing (on, onWithOptions)
 import Json.Decode as Json
 
 
+type alias Node =
+    { id : Int
+    , nodes : Nodes
+    }
+
+
+type Nodes
+    = Nodes (List Node)
+
+
+y : Node
+y =
+    Node 0 (Nodes [])
+
+
 init : ( Model, Cmd Msg )
 init =
     ( emptyModel, Cmd.none )
