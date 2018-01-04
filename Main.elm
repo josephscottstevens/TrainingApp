@@ -1,8 +1,9 @@
 module Main exposing (main)
 
-import Html exposing (Html, program, div, img, text)
-import Html.Attributes exposing (src, style, width)
-import DragDrop
+import Html exposing (Html, Attribute, program, div, img, text)
+import Html.Attributes exposing (attribute, src, style, width)
+import Html.Events exposing (on, onWithOptions)
+import Json.Decode as Json
 
 
 init : ( Model, Cmd Msg )
@@ -12,14 +13,13 @@ init =
 
 type alias Model =
     { dragItems : List Int
-    , activeItemId : Maybe Int
-    , dragDrop : DragDrop.Model
+    , activeItem : Maybe Int
     }
 
 
 view : Model -> Html Msg
 view model =
-    div [] (List.map (viewDiv model.activeItemId) model.dragItems)
+    div [] (List.map (viewDiv model.activeItem) model.dragItems)
 
 
 viewDiv : Maybe Int -> Int -> Html Msg
@@ -34,8 +34,7 @@ viewDiv activeDragItem itemId =
             else
                 case activeDragItem of
                     Just t ->
-                        -- TODO, might be backwards?
-                        DragDrop.droppable DragDropMsg t itemId
+                        droppable t itemId
 
                     Nothing ->
                         []
@@ -59,7 +58,7 @@ viewDiv activeDragItem itemId =
             if isActive then
                 case activeDragItem of
                     Just t ->
-                        [ img (src url :: width 100 :: DragDrop.draggable DragDropMsg t) []
+                        [ img (src url :: width 100 :: draggable t) []
                         , text ("activeId" ++ toString activeDragItem)
                         ]
 
@@ -72,24 +71,30 @@ viewDiv activeDragItem itemId =
 
 
 type Msg
-    = DragDropMsg DragDrop.Msg
+    = DragStart Int
+    | DragEnd
+    | DragEnter Int Int
+    | DragLeave Int
+    | Drop Int Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        DragDropMsg dragMsg ->
-            let
-                ( dragDrop, activeItemId ) =
-                    DragDrop.update dragMsg model.dragDrop model.activeItemId
+        DragStart dragId ->
+            { model | activeItem = Just dragId } ! []
 
-                newModel =
-                    { model
-                        | dragDrop = dragDrop
-                        , activeItemId = activeItemId
-                    }
-            in
-                ( newModel, Cmd.none )
+        DragEnd ->
+            { model | activeItem = Nothing } ! []
+
+        DragEnter dragId dropId ->
+            { model | activeItem = Just dragId } ! []
+
+        DragLeave dragId ->
+            { model | activeItem = Just dragId } ! []
+
+        Drop dragId dropId ->
+            { model | activeItem = Just dragId } ! []
 
 
 main : Program Never Model Msg
@@ -105,6 +110,25 @@ main =
 emptyModel : Model
 emptyModel =
     { dragItems = [ 0, 1, 2 ]
-    , activeItemId = Just 0
-    , dragDrop = DragDrop.init
+    , activeItem = Nothing
     }
+
+
+draggable : Int -> List (Html.Attribute Msg)
+draggable dragId =
+    [ attribute "draggable" "true"
+    , on "dragstart" <| Json.succeed <| DragStart dragId
+    , on "dragend" <| Json.succeed <| DragEnd
+    , attribute "ondragstart" "event.dataTransfer.setData('text/plain', '');"
+    ]
+
+
+droppable : Int -> Int -> List (Attribute Msg)
+droppable dragId dropId =
+    [ on "dragenter" <| Json.succeed <| DragEnter dragId dropId
+    , on "dragleave" <| Json.succeed <| DragLeave dropId
+    , onWithOptions "drop" { stopPropagation = True, preventDefault = True } <|
+        Json.succeed <|
+            Drop dragId dropId
+    , attribute "ondragover" "event.stopPropagation(); event.preventDefault();"
+    ]
