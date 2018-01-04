@@ -71,7 +71,7 @@ viewDiv : Position -> { position : Position, count : Int } -> Maybe Position -> 
 viewDiv position data dropId =
     let
         highlight =
-            if dropId |> Maybe.map ((==) position) |> Maybe.withDefault False then
+            if dropId == Just position then
                 [ style [ ( "background-color", "cyan" ) ] ]
             else
                 []

@@ -35,6 +35,7 @@ updateSticky =
     updateCommon True
 
 
+updateCommon : Bool -> Msg dragId dropId -> Model dragId dropId -> ( Model dragId dropId, Maybe ( dragId, dropId ) )
 updateCommon sticky msg model =
     case ( msg, model, sticky ) of
         ( DragStart dragId, _, _ ) ->
