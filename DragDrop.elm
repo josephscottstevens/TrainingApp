@@ -1,4 +1,15 @@
-module DragDrop exposing (Model, init, Msg, update, draggable, droppable, getDragId, getDropId)
+module DragDrop
+    exposing
+        ( Model
+        , DragItem
+        , init
+        , Msg
+        , update
+        , getDragId
+        , getDropId
+        , draggable
+        , droppable
+        )
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -12,57 +23,58 @@ type alias DragItem =
     }
 
 
-type Model dragId dropId
+type State
     = NotDragging
-    | Dragging dragId
-    | DraggedOver dragId dropId
+    | Dragging
+    | DraggedOver
 
 
-init : Model dragId dropId
+type alias Model =
+    { state : State
+    , dragId : Int
+    , dropId : Int
+    }
+
+
+init : Model
 init =
-    NotDragging
+    { state = NotDragging
+    , dragId = 0
+    , dropId = 0
+    }
 
 
-type Msg dragId dropId
-    = DragStart dragId
+type Msg
+    = DragStart DragItem
     | DragEnd
-    | DragEnter dropId
-    | DragLeave dropId
-    | Drop dropId
+    | DragEnter DragItem
+    | DragLeave DragItem
+    | Drop DragItem
 
 
-update : Msg dragId dropId -> Model dragId dropId -> ( Model dragId dropId, Maybe ( dragId, dropId ) )
+update : Msg -> Model -> ( Model, Maybe DragItem )
 update msg model =
-    case ( msg, model ) of
-        ( DragStart dragId, _ ) ->
-            ( Dragging dragId, Nothing )
+    case msg of
+        DragStart t ->
+            ( { model | state = Dragging, dragId = t.dragId }, Nothing )
 
-        ( DragEnd, _ ) ->
-            ( NotDragging, Nothing )
+        DragEnd ->
+            ( { model | state = NotDragging }, Nothing )
 
-        ( DragEnter dropId, Dragging dragId ) ->
-            ( DraggedOver dragId dropId, Nothing )
+        DragEnter t ->
+            ( { model | state = DraggedOver, dragId = t.dragId, dropId = t.dropId }, Nothing )
 
-        ( DragEnter dropId, DraggedOver dragId _ ) ->
-            ( DraggedOver dragId dropId, Nothing )
-
-        ( DragLeave dropId_, DraggedOver dragId dropId ) ->
-            if dropId_ == dropId then
-                ( Dragging dragId, Nothing )
+        DragLeave t ->
+            if t.dropId == model.dropId then
+                ( { model | state = Dragging, dropId = t.dropId }, Nothing )
             else
                 ( model, Nothing )
 
-        ( Drop dropId, Dragging dragId ) ->
-            ( NotDragging, Just ( dragId, dropId ) )
-
-        ( Drop dropId, DraggedOver dragId _ ) ->
-            ( NotDragging, Just ( dragId, dropId ) )
-
-        _ ->
-            ( model, Nothing )
+        Drop t ->
+            ( { model | state = NotDragging }, Just { dragId = t.dragId, dropId = t.dropId } )
 
 
-draggable : (Msg dragId dropId -> msg) -> dragId -> List (Attribute msg)
+draggable : (Msg -> msg) -> DragItem -> List (Attribute msg)
 draggable wrap drag =
     [ attribute "draggable" "true"
     , on "dragstart" <| Json.succeed <| wrap <| DragStart drag
@@ -71,7 +83,7 @@ draggable wrap drag =
     ]
 
 
-droppable : (Msg dragId dropId -> msg) -> dropId -> List (Attribute msg)
+droppable : (Msg -> msg) -> DragItem -> List (Attribute msg)
 droppable wrap dropId =
     [ on "dragenter" <| Json.succeed <| wrap <| DragEnter dropId
     , on "dragleave" <| Json.succeed <| wrap <| DragLeave dropId
@@ -80,27 +92,27 @@ droppable wrap dropId =
     ]
 
 
-getDragId : Model dragId dropId -> Maybe dragId
+getDragId : Model -> Maybe Int
 getDragId model =
-    case model of
+    case model.state of
         NotDragging ->
             Nothing
 
-        Dragging dragId ->
-            Just dragId
+        Dragging ->
+            Just model.dragId
 
-        DraggedOver dragId _ ->
-            Just dragId
+        DraggedOver ->
+            Just model.dragId
 
 
-getDropId : Model dragId dropId -> Maybe dropId
+getDropId : Model -> Maybe Int
 getDropId model =
-    case model of
+    case model.state of
         NotDragging ->
             Nothing
 
-        Dragging _ ->
+        Dragging ->
             Nothing
 
-        DraggedOver _ dropId ->
-            Just dropId
+        DraggedOver ->
+            Just model.dropId

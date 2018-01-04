@@ -10,15 +10,9 @@ init =
     ( emptyModel, Cmd.none )
 
 
-type alias DragItem =
-    { dragId : Int
-    , dropId : Int
-    }
-
-
 type alias Model =
-    { dragItem : DragItem
-    , dragDrop : DragDrop.Model Int Int
+    { dragItem : DragDrop.DragItem
+    , dragDrop : DragDrop.Model
     }
 
 
@@ -35,21 +29,21 @@ view model =
             ]
 
 
-viewDiv : Int -> DragItem -> Maybe Int -> Html Msg
-viewDiv itemId dragItem maybeDropId =
+viewDiv : Int -> DragDrop.DragItem -> Maybe DragDrop.DragItem -> Html Msg
+viewDiv itemId dragItem activeDragItem =
     let
         dropStyle =
-            if dragItem.dropId == itemId then
+            if Just dragItem == activeDragItem then
                 []
             else
-                DragDrop.droppable DragDropMsg itemId
+                DragDrop.droppable DragDropMsg
 
         divStyle =
             [ style
                 [ ( "border", "1px solid black" )
                 , ( "padding", "50px" )
                 , ( "text-align", "center" )
-                , if maybeDropId == Just itemId then
+                , if dragItem == Just activeDragItem then
                     ( "background-color", "cyan" )
                   else
                     ( "", "" )
@@ -60,8 +54,8 @@ viewDiv itemId dragItem maybeDropId =
             "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
 
         children =
-            if dragItem.dropId == itemId then
-                [ img (src url :: width 100 :: DragDrop.draggable DragDropMsg dragItem.dragId) []
+            if dragItem == Just activeDragItem then
+                [ img (src url :: width 100 :: DragDrop.draggable DragDropMsg dragItem) []
                 , text (toString dragItem.dragId)
                 ]
             else
@@ -71,7 +65,7 @@ viewDiv itemId dragItem maybeDropId =
 
 
 type Msg
-    = DragDropMsg (DragDrop.Msg Int Int)
+    = DragDropMsg DragDrop.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -90,8 +84,8 @@ update msg model =
                                 Nothing ->
                                     model.dragItem
 
-                                Just ( dragId, dropId ) ->
-                                    { dragId = dragId + 1, dropId = dropId }
+                                Just t ->
+                                    { dragId = t.dragId + 1, dropId = t.dropId }
                     }
             in
                 ( newModel, Cmd.none )
