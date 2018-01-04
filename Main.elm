@@ -12,7 +12,7 @@ type Position
 
 
 type alias Model =
-    { data : { count : Int, position : Position }
+    { data : { dragId : Int, dropId : Position }
     , dragDrop : DragDrop.Model Int Position
     }
 
@@ -23,7 +23,7 @@ type Msg
 
 model : Model
 model =
-    { data = { count = 0, position = Up }
+    { data = { dragId = 0, dropId = Up }
     , dragDrop = DragDrop.init
     }
 
@@ -43,8 +43,8 @@ update msg model =
                             Nothing ->
                                 model.data
 
-                            Just ( count, position ) ->
-                                { count = count + 1, position = position }
+                            Just ( dragId, dropId ) ->
+                                { dragId = dragId + 1, dropId = dropId }
                 }
                     ! []
 
@@ -67,7 +67,7 @@ divStyle =
     [ style [ ( "border", "1px solid black" ), ( "padding", "50px" ), ( "text-align", "center" ) ] ]
 
 
-viewDiv : Position -> { position : Position, count : Int } -> Maybe Position -> Html Msg
+viewDiv : Position -> { dropId : Position, dragId : Int } -> Maybe Position -> Html Msg
 viewDiv position data dropId =
     let
         highlight =
@@ -77,7 +77,7 @@ viewDiv position data dropId =
                 []
 
         droppable =
-            if data.position /= position then
+            if data.dropId /= position then
                 DragDrop.droppable DragDropMsg position
             else
                 []
@@ -86,9 +86,9 @@ viewDiv position data dropId =
             divStyle ++ highlight ++ droppable
 
         children =
-            if data.position == position then
-                [ img (src "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg" :: width 100 :: DragDrop.draggable DragDropMsg data.count) []
-                , text (toString data.count)
+            if data.dropId == position then
+                [ img (src "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg" :: width 100 :: DragDrop.draggable DragDropMsg data.dragId) []
+                , text (toString data.dragId)
                 ]
             else
                 []
