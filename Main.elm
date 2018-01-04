@@ -62,17 +62,17 @@ divStyle =
 
 
 viewDiv : Int -> { dropId : Int, dragId : Int } -> Maybe Int -> Html Msg
-viewDiv position data dropId =
+viewDiv id data maybeDropId =
     let
         highlight =
-            if dropId == Just position then
+            if maybeDropId == Just id then
                 [ style [ ( "background-color", "cyan" ) ] ]
             else
                 []
 
         droppable =
-            if data.dropId /= position then
-                DragDrop.droppable DragDropMsg position
+            if data.dropId /= id then
+                DragDrop.droppable DragDropMsg id
             else
                 []
 
@@ -80,7 +80,7 @@ viewDiv position data dropId =
             divStyle ++ highlight ++ droppable
 
         children =
-            if data.dropId == position then
+            if data.dropId == id then
                 [ img (src "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg" :: width 100 :: DragDrop.draggable DragDropMsg data.dragId) []
                 , text (toString data.dragId)
                 ]
