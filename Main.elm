@@ -36,20 +36,20 @@ view model =
 
 
 viewDiv : Int -> DragItem -> Maybe Int -> Html Msg
-viewDiv id dragItem maybeDropId =
+viewDiv itemId dragItem maybeDropId =
     let
         dropStyle =
-            if dragItem.dropId == id then
+            if dragItem.dropId == itemId then
                 []
             else
-                DragDrop.droppable DragDropMsg id
+                DragDrop.droppable DragDropMsg itemId
 
         divStyle =
             [ style
                 [ ( "border", "1px solid black" )
                 , ( "padding", "50px" )
                 , ( "text-align", "center" )
-                , if maybeDropId == Just id then
+                , if maybeDropId == Just itemId then
                     ( "background-color", "cyan" )
                   else
                     ( "", "" )
@@ -60,7 +60,7 @@ viewDiv id dragItem maybeDropId =
             "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
 
         children =
-            if dragItem.dropId == id then
+            if dragItem.dropId == itemId then
                 [ img (src url :: width 100 :: DragDrop.draggable DragDropMsg dragItem.dragId) []
                 , text (toString dragItem.dragId)
                 ]
@@ -81,18 +81,20 @@ update msg model =
             let
                 ( dragDrop, result ) =
                     DragDrop.update dragMsg model.dragDrop
-            in
-                { model
-                    | dragDrop = dragDrop
-                    , dragItem =
-                        case result of
-                            Nothing ->
-                                model.dragItem
 
-                            Just ( dragId, dropId ) ->
-                                { dragId = dragId + 1, dropId = dropId }
-                }
-                    ! []
+                newModel =
+                    { model
+                        | dragDrop = dragDrop
+                        , dragItem =
+                            case result of
+                                Nothing ->
+                                    model.dragItem
+
+                                Just ( dragId, dropId ) ->
+                                    { dragId = dragId + 1, dropId = dropId }
+                    }
+            in
+                ( newModel, Cmd.none )
 
 
 main : Program Never Model Msg
