@@ -107,11 +107,7 @@ update msg model =
             { model | dragId = Just dragId } ! []
 
         Drop dropId ->
-            model ! []
-
-
-
--- { model | dragId = Nothing, dragItems = dropId :: model.dragItems } ! []
+            { model | currentNode = insertNode dropId 8 model.currentNode } ! []
 
 
 main : Program Never Model Msg
@@ -155,6 +151,34 @@ droppable dropId =
 url : String
 url =
     "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
+
+
+x : Node
+x =
+    { id = 5, nodes = Empty }
+
+
+test : List Node -> List Node
+test nodes =
+    x :: nodes
+
+
+insertNode : Int -> Int -> Node -> Node
+insertNode searchId newId node =
+    if node.id == searchId then
+        case node.nodes of
+            Empty ->
+                { id = newId, nodes = Empty }
+
+            Nodes t ->
+                { node | nodes = Nodes ({ id = newId, nodes = Empty } :: t) }
+    else
+        case node.nodes of
+            Empty ->
+                node
+
+            Nodes t ->
+                insertNode searchId newId node
 
 
 viewTree : String -> Int -> Html Msg
