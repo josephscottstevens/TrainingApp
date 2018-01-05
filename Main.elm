@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Html exposing (Html, Attribute, program, div, img, text)
+import Html exposing (Html, Attribute, program, div, img, text, span)
 import Html.Attributes exposing (attribute, src, style, width)
 import Html.Events exposing (on, onWithOptions)
 import Json.Decode as Json
@@ -38,6 +38,7 @@ view model =
     in
         div []
             [ img (src url :: width 100 :: draggable len) []
+            , simpleTree "" model.currentNode
             , nodesToHtml model testNode
             ]
 
@@ -154,6 +155,21 @@ droppable dropId =
 url : String
 url =
     "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
+
+
+viewTree : String -> Int -> Html Msg
+viewTree format id =
+    div [] [ text (format ++ toString id) ]
+
+
+simpleTree : String -> Node -> Html Msg
+simpleTree format node =
+    case node.nodes of
+        Empty ->
+            viewTree format node.id
+
+        Nodes t ->
+            div [] (viewTree format node.id :: List.map (simpleTree (format ++ "--")) t)
 
 
 testNode : Node
