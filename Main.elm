@@ -13,12 +13,31 @@ type alias Node =
 
 
 type Nodes
-    = Nodes (List Node)
+    = Empty
+    | Nodes (List Node)
+
+
+z : Node
+z =
+    { id = 1, nodes = Nodes [ y ] }
 
 
 y : Node
 y =
-    Node 0 (Nodes [])
+    { id = 0, nodes = Empty }
+
+
+x : Nodes
+x =
+    y.nodes
+
+
+
+-- case node.nodes of
+--     [] ->
+--         div [] [ text (toString node.id) ]
+--     first :: rest ->
+--         div [] [ text "eh" ]
 
 
 init : ( Model, Cmd Msg )
