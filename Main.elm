@@ -17,50 +17,6 @@ type Nodes
     | Nodes (List Node)
 
 
-testNode : Node
-testNode =
-    { id = 0
-    , nodes =
-        Nodes
-            [ { id = 1, nodes = Empty }
-            , { id = 2
-              , nodes =
-                    Nodes
-                        [ { id = 3, nodes = Empty }
-                        , { id = 4, nodes = Empty }
-                        ]
-              }
-            ]
-    }
-
-
-divStyle : Attribute msg
-divStyle =
-    style
-        [ ( "width", "100px" )
-        , ( "height", "100px" )
-        , ( "border-color", "red" )
-        , ( "border-width", "1px" )
-        , ( "border-style", "solid" )
-        , ( "text-align", "center" )
-        ]
-
-
-idToDiv : Int -> Html Msg
-idToDiv id =
-    div (divStyle :: droppable id) [ text (toString id) ]
-
-
-nodesToHtml : Node -> Html Msg
-nodesToHtml node =
-    case node.nodes of
-        Empty ->
-            idToDiv node.id
-
-        Nodes t ->
-            div [] (idToDiv node.id :: List.map nodesToHtml t)
-
-
 init : ( Model, Cmd Msg )
 init =
     ( emptyModel, Cmd.none )
@@ -70,6 +26,7 @@ type alias Model =
     { dragItems : List Int
     , dragId : Maybe Int
     , dropId : Maybe Int
+    , currentNode : Node
     }
 
 
@@ -77,23 +34,36 @@ view : Model -> Html Msg
 view model =
     let
         len =
-            1 + List.length model.dragItems
+            --1 + List.length model.dragItems
+            8
     in
         div []
             [ img (src url :: width 100 :: (draggable len)) []
-            , nodesToHtml testNode
-            , div [] (List.map (viewDiv model.dropId model.dragId) model.dragItems)
+            , nodesToHtml model testNode
+            , div [] (List.map (viewDiv model) model.dragItems)
             ]
 
 
-viewDiv : Maybe Int -> Maybe Int -> Int -> Html Msg
-viewDiv dropId dragId itemId =
+idToDiv : Model -> Int -> Html Msg
+idToDiv model id =
+    div (divStyle :: droppable id) [ text (toString id) ]
+
+
+nodesToHtml : Model -> Node -> Html Msg
+nodesToHtml model node =
+    case node.nodes of
+        Empty ->
+            (idToDiv model) node.id
+
+        Nodes t ->
+            div [] ((idToDiv model) node.id :: List.map (nodesToHtml model) t)
+
+
+viewDiv : Model -> Int -> Html Msg
+viewDiv model itemId =
     let
         isActive =
-            Just itemId == dropId
-
-        dropStyle =
-            droppable itemId
+            Just itemId == model.dropId
 
         divStyle =
             [ style
@@ -110,13 +80,13 @@ viewDiv dropId dragId itemId =
         children =
             if isActive then
                 [ img (src url :: width 100 :: draggable itemId) []
-                , text ("activeDragId" ++ toString dragId)
-                , text ("activeDropId" ++ toString dropId)
+                , text ("activeDragId" ++ toString model.dragId)
+                , text ("activeDropId" ++ toString model.dropId)
                 ]
             else
                 []
     in
-        div (divStyle ++ dropStyle) children
+        div (divStyle ++ (droppable itemId)) children
 
 
 type Msg
@@ -161,6 +131,7 @@ emptyModel =
     { dragItems = [ 7, 8, 9 ]
     , dropId = Nothing
     , dragId = Nothing
+    , currentNode = testNode
     }
 
 
@@ -187,3 +158,32 @@ droppable dropId =
 url : String
 url =
     "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
+
+
+divStyle : Attribute msg
+divStyle =
+    style
+        [ ( "width", "100px" )
+        , ( "height", "100px" )
+        , ( "border-color", "red" )
+        , ( "border-width", "1px" )
+        , ( "border-style", "solid" )
+        , ( "text-align", "center" )
+        ]
+
+
+testNode : Node
+testNode =
+    { id = 0
+    , nodes =
+        Nodes
+            [ { id = 1, nodes = Empty }
+            , { id = 2
+              , nodes =
+                    Nodes
+                        [ { id = 3, nodes = Empty }
+                        , { id = 4, nodes = Empty }
+                        ]
+              }
+            ]
+    }
