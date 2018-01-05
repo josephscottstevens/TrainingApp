@@ -68,9 +68,9 @@ viewDiv model itemId =
 
         children =
             if isActive then
-                [ img (src url :: width 100 :: draggable itemId) [] ]
+                [ text (toString itemId), img (src url :: width 100 :: draggable itemId) [] ]
             else
-                []
+                [ text (toString itemId) ]
     in
         div (divStyle ++ droppable itemId) children
 
