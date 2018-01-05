@@ -26,14 +26,13 @@ type alias Model =
     { dragId : Maybe Int
     , dropId : Maybe Int
     , currentNode : Node
-    , count : Int
     }
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ img (src url :: width 100 :: draggable 0) []
+        [ img (src url :: width 100 :: draggable -1) []
         , simpleTree "" model.currentNode
         , nodesToHtml model testNode
         ]
@@ -101,8 +100,7 @@ update msg model =
 
         Drop dropId ->
             { model
-                | currentNode = insertNode dropId (model.count + 1) model.currentNode
-                , count = model.count + 2
+                | currentNode = insertNode dropId (countTree model.currentNode + 1) model.currentNode
             }
                 ! []
 
@@ -122,7 +120,6 @@ emptyModel =
     { dropId = Nothing
     , dragId = Nothing
     , currentNode = testNode
-    , count = 6
     }
 
 
@@ -160,26 +157,27 @@ insertNode searchId newId node =
     --         Nodes t ->
     --             { node | nodes = Nodes ({ id = newId, nodes = Empty } :: t) }
     -- else
-    Debug.log (toString searchId)
-        (case node.nodes of
-            Empty ->
-                node
-
-            Nodes t ->
-                insertNode searchId newId { node | nodes = Nodes (List.map (insertNode searchId newId) t) }
-        )
-
-
-countTree : Int -> Node -> Int
-countTree count node =
-    -- TODO, instead of tracking count
-    -- get this function to work
     case node.nodes of
         Empty ->
-            count
+            node
 
         Nodes t ->
-            List.length (List.map (countTree (count + 1)) t)
+            insertNode searchId newId { node | nodes = Nodes (List.map (insertNode searchId newId) t) }
+
+
+countTree : Node -> Int
+countTree node =
+    List.length (treeIds [] node)
+
+
+treeIds : List Int -> Node -> List Int
+treeIds counts node =
+    case node.nodes of
+        Empty ->
+            node.id :: counts
+
+        Nodes t ->
+            node.id :: List.concatMap (treeIds counts) t
 
 
 viewTree : String -> Int -> Html Msg
@@ -199,15 +197,15 @@ simpleTree format node =
 
 testNode : Node
 testNode =
-    { id = 1
+    { id = 0
     , nodes =
         Nodes
-            [ { id = 2, nodes = Empty }
-            , { id = 3
+            [ { id = 1, nodes = Empty }
+            , { id = 2
               , nodes =
                     Nodes
-                        [ { id = 4, nodes = Empty }
-                        , { id = 5, nodes = Empty }
+                        [ { id = 3, nodes = Empty }
+                        , { id = 4, nodes = Empty }
                         ]
               }
             ]
