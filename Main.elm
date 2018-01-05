@@ -34,15 +34,31 @@ testNode =
     }
 
 
-nodeToHtml : Node -> Html Msg
-nodeToHtml node =
+divStyle : Attribute msg
+divStyle =
+    style
+        [ ( "width", "100px" )
+        , ( "height", "100px" )
+        , ( "border-color", "red" )
+        , ( "border-width", "1px" )
+        , ( "border-style", "solid" )
+        , ( "text-align", "center" )
+        ]
+
+
+idToDiv : Int -> Html Msg
+idToDiv id =
+    div (divStyle :: droppable id) [ text (toString id) ]
+
+
+nodesToHtml : Node -> Html Msg
+nodesToHtml node =
     case node.nodes of
         Empty ->
-            div [] [ text (toString node.id) ]
+            idToDiv node.id
 
         Nodes t ->
-            div []
-                (div [] [ text (toString node.id) ] :: List.map nodeToHtml t)
+            div [] (idToDiv node.id :: List.map nodesToHtml t)
 
 
 init : ( Model, Cmd Msg )
@@ -64,8 +80,8 @@ view model =
             1 + List.length model.dragItems
     in
         div []
-            [ nodeToHtml testNode
-            , img (src url :: width 100 :: (draggable len)) []
+            [ img (src url :: width 100 :: (draggable len)) []
+            , nodesToHtml testNode
             , div [] (List.map (viewDiv model) model.dragItems)
             ]
 
@@ -142,7 +158,7 @@ main =
 
 emptyModel : Model
 emptyModel =
-    { dragItems = [ 0, 1, 2 ]
+    { dragItems = [ 7, 8, 9 ]
     , dropId = Nothing
     , dragId = Nothing
     }
@@ -168,5 +184,6 @@ droppable dropId =
     ]
 
 
+url : String
 url =
     "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
