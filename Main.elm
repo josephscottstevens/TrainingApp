@@ -23,8 +23,7 @@ init =
 
 
 type alias Model =
-    { dragItems : List Int
-    , dragId : Maybe Int
+    { dragId : Maybe Int
     , dropId : Maybe Int
     , currentNode : Node
     }
@@ -38,25 +37,19 @@ view model =
             8
     in
         div []
-            [ img (src url :: width 100 :: (draggable len)) []
+            [ img (src url :: width 100 :: draggable len) []
             , nodesToHtml model testNode
-            , div [] (List.map (viewDiv model) model.dragItems)
             ]
-
-
-idToDiv : Model -> Int -> Html Msg
-idToDiv model id =
-    div (divStyle :: droppable id) [ text (toString id) ]
 
 
 nodesToHtml : Model -> Node -> Html Msg
 nodesToHtml model node =
     case node.nodes of
         Empty ->
-            (viewDiv model) node.id
+            viewDiv model node.id
 
         Nodes t ->
-            div [] ((viewDiv model) node.id :: List.map (nodesToHtml model) t)
+            div [] (viewDiv model node.id :: List.map (nodesToHtml model) t)
 
 
 viewDiv : Model -> Int -> Html Msg
@@ -86,7 +79,7 @@ viewDiv model itemId =
             else
                 []
     in
-        div (divStyle ++ (droppable itemId)) children
+        div (divStyle ++ droppable itemId) children
 
 
 type Msg
@@ -113,7 +106,11 @@ update msg model =
             { model | dragId = Just dragId } ! []
 
         Drop dropId ->
-            { model | dragId = Nothing, dragItems = dropId :: model.dragItems } ! []
+            model ! []
+
+
+
+-- { model | dragId = Nothing, dragItems = dropId :: model.dragItems } ! []
 
 
 main : Program Never Model Msg
@@ -128,8 +125,7 @@ main =
 
 emptyModel : Model
 emptyModel =
-    { dragItems = [ 7, 8, 9 ]
-    , dropId = Nothing
+    { dropId = Nothing
     , dragId = Nothing
     , currentNode = testNode
     }
@@ -158,18 +154,6 @@ droppable dropId =
 url : String
 url =
     "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
-
-
-divStyle : Attribute msg
-divStyle =
-    style
-        [ ( "width", "100px" )
-        , ( "height", "100px" )
-        , ( "border-color", "red" )
-        , ( "border-width", "1px" )
-        , ( "border-style", "solid" )
-        , ( "text-align", "center" )
-        ]
 
 
 testNode : Node
