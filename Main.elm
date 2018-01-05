@@ -27,9 +27,14 @@ y =
     { id = 0, nodes = Empty }
 
 
-x : Nodes
+x : List Node
 x =
-    y.nodes
+    case y.nodes of
+        Empty ->
+            []
+
+        Nodes t ->
+            t
 
 
 
