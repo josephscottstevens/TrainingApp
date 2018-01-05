@@ -150,19 +150,20 @@ url =
 
 insertNode : Int -> Int -> Node -> Node
 insertNode searchId newId node =
-    -- if node.id == searchId then
-    --     case node.nodes of
-    --         Empty ->
-    --             { id = newId, nodes = Empty }
-    --         Nodes t ->
-    --             { node | nodes = Nodes ({ id = newId, nodes = Empty } :: t) }
-    -- else
-    case node.nodes of
-        Empty ->
-            node
+    if node.id == searchId then
+        case node.nodes of
+            Empty ->
+                { node | nodes = Nodes [ { id = newId, nodes = Empty } ] }
 
-        Nodes t ->
-            insertNode searchId newId { node | nodes = Nodes (List.map (insertNode searchId newId) t) }
+            Nodes t ->
+                { node | nodes = Nodes ({ id = newId, nodes = Empty } :: t) }
+    else
+        case node.nodes of
+            Empty ->
+                node
+
+            Nodes t ->
+                { node | nodes = Nodes (List.map (insertNode searchId newId) t) }
 
 
 countTree : Node -> Int
