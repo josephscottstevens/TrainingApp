@@ -26,21 +26,17 @@ type alias Model =
     { dragId : Maybe Int
     , dropId : Maybe Int
     , currentNode : Node
+    , count : Int
     }
 
 
 view : Model -> Html Msg
 view model =
-    let
-        len =
-            --1 + List.length model.dragItems
-            8
-    in
-        div []
-            [ img (src url :: width 100 :: draggable len) []
-            , simpleTree "" model.currentNode
-            , nodesToHtml model testNode
-            ]
+    div []
+        [ img (src url :: width 100 :: draggable 0) []
+        , simpleTree "" model.currentNode
+        , nodesToHtml model testNode
+        ]
 
 
 nodesToHtml : Model -> Node -> Html Msg
@@ -73,10 +69,7 @@ viewDiv model itemId =
 
         children =
             if isActive then
-                [ img (src url :: width 100 :: draggable itemId) []
-                , text ("activeDragId" ++ toString model.dragId)
-                , text ("activeDropId" ++ toString model.dropId)
-                ]
+                [ img (src url :: width 100 :: draggable itemId) [] ]
             else
                 []
     in
@@ -107,7 +100,11 @@ update msg model =
             { model | dragId = Just dragId } ! []
 
         Drop dropId ->
-            { model | currentNode = insertNode dropId 8 model.currentNode } ! []
+            { model
+                | currentNode = insertNode dropId (model.count + 1) model.currentNode
+                , count = model.count + 2
+            }
+                ! []
 
 
 main : Program Never Model Msg
@@ -125,6 +122,7 @@ emptyModel =
     { dropId = Nothing
     , dragId = Nothing
     , currentNode = testNode
+    , count = 6
     }
 
 
@@ -153,16 +151,6 @@ url =
     "https://upload.wikimedia.org/wikipedia/commons/f/f3/Elm_logo.svg"
 
 
-x : Node
-x =
-    { id = 5, nodes = Empty }
-
-
-test : List Node -> List Node
-test nodes =
-    x :: nodes
-
-
 insertNode : Int -> Int -> Node -> Node
 insertNode searchId newId node =
     if node.id == searchId then
@@ -179,6 +167,18 @@ insertNode searchId newId node =
 
             Nodes t ->
                 insertNode searchId newId node
+
+
+countTree : Int -> Node -> Int
+countTree count node =
+    -- TODO, instead of tracking count
+    -- get this function to work
+    case node.nodes of
+        Empty ->
+            count
+
+        Nodes t ->
+            List.length (List.map (countTree (count + 1)) t)
 
 
 viewTree : String -> Int -> Html Msg
@@ -198,15 +198,15 @@ simpleTree format node =
 
 testNode : Node
 testNode =
-    { id = 0
+    { id = 1
     , nodes =
         Nodes
-            [ { id = 1, nodes = Empty }
-            , { id = 2
+            [ { id = 2, nodes = Empty }
+            , { id = 3
               , nodes =
                     Nodes
-                        [ { id = 3, nodes = Empty }
-                        , { id = 4, nodes = Empty }
+                        [ { id = 4, nodes = Empty }
+                        , { id = 5, nodes = Empty }
                         ]
               }
             ]
