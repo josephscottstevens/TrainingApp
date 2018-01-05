@@ -23,7 +23,13 @@ testNode =
     , nodes =
         Nodes
             [ { id = 1, nodes = Empty }
-            , { id = 2, nodes = Empty }
+            , { id = 2
+              , nodes =
+                    Nodes
+                        [ { id = 3, nodes = Empty }
+                        , { id = 4, nodes = Empty }
+                        ]
+              }
             ]
     }
 
@@ -35,7 +41,8 @@ nodeToHtml node =
             div [] [ text (toString node.id) ]
 
         Nodes t ->
-            div [] (List.map nodeToHtml t)
+            div []
+                (div [] [ text (toString node.id) ] :: List.map nodeToHtml t)
 
 
 init : ( Model, Cmd Msg )
