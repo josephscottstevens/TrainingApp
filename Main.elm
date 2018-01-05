@@ -17,32 +17,25 @@ type Nodes
     | Nodes (List Node)
 
 
-z : Node
-z =
-    { id = 1, nodes = Nodes [ y ] }
+testNode : Node
+testNode =
+    { id = 0
+    , nodes =
+        Nodes
+            [ { id = 1, nodes = Empty }
+            , { id = 2, nodes = Empty }
+            ]
+    }
 
 
-y : Node
-y =
-    { id = 0, nodes = Empty }
-
-
-x : List Node
-x =
-    case y.nodes of
+nodeToHtml : Node -> Html Msg
+nodeToHtml node =
+    case node.nodes of
         Empty ->
-            []
+            div [] [ text (toString node.id) ]
 
         Nodes t ->
-            t
-
-
-
--- case node.nodes of
---     [] ->
---         div [] [ text (toString node.id) ]
---     first :: rest ->
---         div [] [ text "eh" ]
+            div [] (List.map nodeToHtml t)
 
 
 init : ( Model, Cmd Msg )
@@ -64,7 +57,8 @@ view model =
             1 + List.length model.dragItems
     in
         div []
-            [ img (src url :: width 100 :: (draggable len)) []
+            [ nodeToHtml testNode
+            , img (src url :: width 100 :: (draggable len)) []
             , div [] (List.map (viewDiv model) model.dragItems)
             ]
 
