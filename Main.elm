@@ -53,10 +53,10 @@ nodesToHtml : Model -> Node -> Html Msg
 nodesToHtml model node =
     case node.nodes of
         Empty ->
-            (idToDiv model) node.id
+            (viewDiv model) node.id
 
         Nodes t ->
-            div [] ((idToDiv model) node.id :: List.map (nodesToHtml model) t)
+            div [] ((viewDiv model) node.id :: List.map (nodesToHtml model) t)
 
 
 viewDiv : Model -> Int -> Html Msg
