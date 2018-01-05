@@ -82,15 +82,15 @@ view model =
         div []
             [ img (src url :: width 100 :: (draggable len)) []
             , nodesToHtml testNode
-            , div [] (List.map (viewDiv model) model.dragItems)
+            , div [] (List.map (viewDiv model.dropId model.dragId) model.dragItems)
             ]
 
 
-viewDiv : Model -> Int -> Html Msg
-viewDiv model itemId =
+viewDiv : Maybe Int -> Maybe Int -> Int -> Html Msg
+viewDiv dropId dragId itemId =
     let
         isActive =
-            Just itemId == model.dropId
+            Just itemId == dropId
 
         dropStyle =
             droppable itemId
@@ -110,8 +110,8 @@ viewDiv model itemId =
         children =
             if isActive then
                 [ img (src url :: width 100 :: draggable itemId) []
-                , text ("activeDragId" ++ toString model.dragId)
-                , text ("activeDropId" ++ toString model.dropId)
+                , text ("activeDragId" ++ toString dragId)
+                , text ("activeDropId" ++ toString dropId)
                 ]
             else
                 []
