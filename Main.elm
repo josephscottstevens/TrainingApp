@@ -207,21 +207,20 @@ simpleTree format node =
 
 defaultNode : Int -> Node
 defaultNode id =
-    { id = id, nodes = Empty }
+    defaultNodeWithChildren id []
+
+
+defaultNodeWithChildren : Int -> List Node -> Node
+defaultNodeWithChildren id nodes =
+    { id = id, nodes = Nodes nodes }
 
 
 testNode : Node
 testNode =
-    { id = 0
-    , nodes =
-        Nodes
-            [ { id = 1, nodes = Empty }
-            , { id = 2
-              , nodes =
-                    Nodes
-                        [ { id = 3, nodes = Empty }
-                        , { id = 4, nodes = Empty }
-                        ]
-              }
+    defaultNodeWithChildren 0
+        [ defaultNode 1
+        , defaultNodeWithChildren 2
+            [ defaultNode 3
+            , defaultNode 4
             ]
-    }
+        ]
