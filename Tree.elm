@@ -41,18 +41,6 @@ insert id tree =
                 Node t (newNode :: y)
 
 
-updateTextColor : Int -> String -> Tree -> Tree
-updateTextColor id newColor tree =
-    map
-        (\t ->
-            if t.id == id then
-                { t | textColor = newColor }
-            else
-                t
-        )
-        tree
-
-
 update : NodeItem -> Tree -> Tree
 update nodeItem tree =
     map
