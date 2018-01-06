@@ -1,13 +1,14 @@
 module Main exposing (main)
 
-import Html exposing (Html, Attribute, program, div, img, text, span)
-import Html.Attributes exposing (attribute, src, style, width)
-import Html.Events exposing (on, onWithOptions, onClick)
+import Html exposing (Html, Attribute, program, div, img, text, input)
+import Html.Attributes exposing (attribute, src, style, width, value)
+import Html.Events exposing (on, onWithOptions, onClick, onInput)
 import Json.Decode as Json
 
 
 type alias Node =
     { id : Int
+    , textColor : String
     , nodes : Nodes
     }
 
@@ -34,9 +35,42 @@ view : Model -> Html Msg
 view model =
     div []
         [ img (src url :: width 100 :: draggable -1) []
+        , viewSelectedItem model
         , simpleTree "" model.currentNode
         , nodesToHtml model model.currentNode
         ]
+
+
+viewSelectedItem : Model -> Html Msg
+viewSelectedItem model =
+    case model.selectedId of
+        Just selectedId ->
+            let
+                selectStyle =
+                    style
+                        [ ( "float", "right" )
+                        , ( "margin-right", "20px" )
+                        , ( "margin-top", "20px" )
+                        ]
+
+                node =
+                    getTreeItemById selectedId model.currentNode
+
+                selectedText =
+                    case node of
+                        Just t ->
+                            input [ value t.textColor, onInput (UpdateTextColor selectedId) ] []
+
+                        Nothing ->
+                            text ""
+            in
+                div [ selectStyle ]
+                    [ div [] [ text ("Id: " ++ (toString selectedId)) ]
+                    , div [] [ selectedText ]
+                    ]
+
+        Nothing ->
+            div [] []
 
 
 nodesToHtml : Model -> Node -> Html Msg
@@ -58,11 +92,23 @@ viewDiv model itemId =
         isSelected =
             Just itemId == model.selectedId
 
+        node =
+            getTreeItemById itemId model.currentNode
+
+        textColor =
+            case node of
+                Just t ->
+                    t.textColor
+
+                Nothing ->
+                    ""
+
         divStyle =
             [ style
                 [ ( "border", "1px solid black" )
                 , ( "padding", "50px" )
                 , ( "text-align", "center" )
+                , ( "text-color", textColor )
                 , if isActive then
                     ( "background-color", "cyan" )
                   else if isSelected then
@@ -89,6 +135,7 @@ type Msg
     | DragLeave Int
     | Drop Int
     | SetSelected Int
+    | UpdateTextColor Int String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -111,6 +158,13 @@ update msg model =
 
         SetSelected selectedId ->
             { model | selectedId = Just selectedId } ! []
+
+        UpdateTextColor itemId textColor ->
+            let
+                node =
+                    getTreeItemById itemId model.currentNode
+            in
+                model ! []
 
 
 main : Program Never Model Msg
@@ -195,6 +249,26 @@ viewTree format id =
     div [] [ text (format ++ toString id) ]
 
 
+getTreeItemById : Int -> Node -> Maybe Node
+getTreeItemById searchId node =
+    if node.id == searchId then
+        Just node
+    else
+        treeToList node
+            |> List.filter (\t -> t.id == searchId)
+            |> List.head
+
+
+treeToList : Node -> List Node
+treeToList node =
+    case node.nodes of
+        Empty ->
+            [ node ]
+
+        Nodes t ->
+            node :: t
+
+
 simpleTree : String -> Node -> Html Msg
 simpleTree format node =
     case node.nodes of
@@ -212,7 +286,10 @@ defaultNode id =
 
 defaultNodeWithChildren : Int -> List Node -> Node
 defaultNodeWithChildren id nodes =
-    { id = id, nodes = Nodes nodes }
+    { id = id
+    , textColor = "black"
+    , nodes = Nodes nodes
+    }
 
 
 testNode : Node
