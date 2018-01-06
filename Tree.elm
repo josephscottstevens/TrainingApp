@@ -1,9 +1,9 @@
-module Tree exposing (Tree, NodeItem, testNode, defaultNode, count)
+module Tree exposing (..)
 
 
-type Tree a
+type Tree
     = Empty
-    | Node a (List (Tree a))
+    | Node NodeItem (List Tree)
 
 
 type alias NodeItem =
@@ -12,17 +12,14 @@ type alias NodeItem =
     }
 
 
-count : Tree NodeItem -> Int
-count tree =
-    case tree of
-        Empty ->
-            0
 
-        Node t y ->
-            List.length y
-
-
-
+-- flatten : Tree NodeItem -> List (Tree NodeItem)
+-- flatten tree =
+--     case tree of
+--         Empty ->
+--             []
+--         Node t y ->
+--             y
 -- Temp
 
 
@@ -33,7 +30,7 @@ defaultNode id =
     }
 
 
-testNode : Tree NodeItem
+testNode : Tree
 testNode =
     Node (defaultNode 0)
         [ Node (defaultNode 1)
