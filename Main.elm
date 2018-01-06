@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Html exposing (Html, Attribute, program, div, img, text, span)
 import Html.Attributes exposing (attribute, src, style, width)
-import Html.Events exposing (on, onWithOptions)
+import Html.Events exposing (on, onWithOptions, onClick)
 import Json.Decode as Json
 
 
@@ -25,6 +25,7 @@ init =
 type alias Model =
     { dragId : Maybe Int
     , dropId : Maybe Int
+    , selectedId : Maybe Int
     , currentNode : Node
     }
 
@@ -54,6 +55,9 @@ viewDiv model itemId =
         isActive =
             Just itemId == model.dropId
 
+        isSelected =
+            Just itemId == model.selectedId
+
         divStyle =
             [ style
                 [ ( "border", "1px solid black" )
@@ -61,9 +65,12 @@ viewDiv model itemId =
                 , ( "text-align", "center" )
                 , if isActive then
                     ( "background-color", "cyan" )
+                  else if isSelected then
+                    ( "background-color", "lightyellow" )
                   else
                     ( "", "" )
                 ]
+            , onClick (SetSelected itemId)
             ]
 
         children =
@@ -81,6 +88,7 @@ type Msg
     | DragEnter Int
     | DragLeave Int
     | Drop Int
+    | SetSelected Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -101,6 +109,9 @@ update msg model =
         Drop dropId ->
             { model | currentNode = insertNode dropId (countTree model.currentNode + 1) model.currentNode } ! []
 
+        SetSelected selectedId ->
+            { model | selectedId = Just selectedId } ! []
+
 
 main : Program Never Model Msg
 main =
@@ -116,6 +127,7 @@ emptyModel : Model
 emptyModel =
     { dropId = Nothing
     , dragId = Nothing
+    , selectedId = Nothing
     , currentNode = testNode
     }
 
