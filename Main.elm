@@ -162,10 +162,10 @@ insertNode searchId newId node =
     if node.id == searchId then
         case node.nodes of
             Empty ->
-                { node | nodes = Nodes [ { id = newId, nodes = Empty } ] }
+                { node | nodes = Nodes [ defaultNode newId ] }
 
             Nodes t ->
-                { node | nodes = Nodes ({ id = newId, nodes = Empty } :: t) }
+                { node | nodes = Nodes (defaultNode newId :: t) }
     else
         case node.nodes of
             Empty ->
@@ -203,6 +203,11 @@ simpleTree format node =
 
         Nodes t ->
             div [] (viewTree format node.id :: List.map (simpleTree (format ++ "--")) t)
+
+
+defaultNode : Int -> Node
+defaultNode id =
+    { id = id, nodes = Empty }
 
 
 testNode : Node
