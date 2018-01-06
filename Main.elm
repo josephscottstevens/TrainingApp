@@ -34,7 +34,7 @@ view model =
     div []
         [ img (src url :: width 100 :: draggable -1) []
         , simpleTree "" model.currentNode
-        , nodesToHtml model testNode
+        , nodesToHtml model model.currentNode
         ]
 
 
@@ -99,10 +99,7 @@ update msg model =
             { model | dragId = Just dragId } ! []
 
         Drop dropId ->
-            { model
-                | currentNode = insertNode dropId (countTree model.currentNode + 1) model.currentNode
-            }
-                ! []
+            { model | currentNode = insertNode dropId (countTree model.currentNode + 1) model.currentNode } ! []
 
 
 main : Program Never Model Msg
