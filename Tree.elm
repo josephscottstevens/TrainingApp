@@ -12,6 +12,11 @@ type alias NodeItem =
     }
 
 
+count : Tree -> Int
+count tree =
+    List.length (flatten tree)
+
+
 flatten : Tree -> List NodeItem
 flatten tree =
     case tree of
@@ -20,6 +25,30 @@ flatten tree =
 
         Node t y ->
             t :: List.concatMap flatten y
+
+
+insert : Int -> Tree -> Tree
+insert id tree =
+    let
+        newNode =
+            Node (defaultNode id) [ Empty ]
+    in
+        case tree of
+            Empty ->
+                newNode
+
+            Node t y ->
+                Node t (newNode :: y)
+
+
+map : (NodeItem -> NodeItem) -> Tree -> Tree
+map func tree =
+    case tree of
+        Empty ->
+            Empty
+
+        Node nodeItem treeList ->
+            Node (func nodeItem) (List.map (\t -> map func t) treeList)
 
 
 
