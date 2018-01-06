@@ -41,6 +41,18 @@ insert id tree =
                 Node t (newNode :: y)
 
 
+update : Int -> NodeItem -> Tree -> Tree
+update id newNodeItem tree =
+    map
+        (\t ->
+            if t.id == id then
+                newNodeItem
+            else
+                t
+        )
+        tree
+
+
 map : (NodeItem -> NodeItem) -> Tree -> Tree
 map func tree =
     case tree of
@@ -48,7 +60,7 @@ map func tree =
             Empty
 
         Node nodeItem treeList ->
-            Node (func nodeItem) (List.map (\t -> map func t) treeList)
+            Node (func nodeItem) (List.map (map func) treeList)
 
 
 
