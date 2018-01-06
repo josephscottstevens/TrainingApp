@@ -12,14 +12,17 @@ type alias NodeItem =
     }
 
 
+flatten : Tree -> List NodeItem
+flatten tree =
+    case tree of
+        Empty ->
+            []
 
--- flatten : Tree NodeItem -> List (Tree NodeItem)
--- flatten tree =
---     case tree of
---         Empty ->
---             []
---         Node t y ->
---             y
+        Node t y ->
+            t :: List.concatMap flatten y
+
+
+
 -- Temp
 
 
