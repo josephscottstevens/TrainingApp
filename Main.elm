@@ -83,14 +83,8 @@ viewDiv model nodeItem =
                 ]
             , onClick (SetSelected nodeItem)
             ]
-
-        children =
-            if isActive then
-                [ text (toString nodeItem.id), img (src url :: width 100 :: draggable nodeItem) [] ]
-            else
-                [ text (toString nodeItem.id) ]
     in
-        div (divStyle ++ droppable nodeItem) children
+        div (divStyle ++ droppable nodeItem) [ text (toString nodeItem.id) ]
 
 
 type Msg
