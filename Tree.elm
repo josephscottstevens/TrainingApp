@@ -11,6 +11,8 @@ type Tree a
 type alias NodeItem =
     { id : Int
     , textColor : String
+    , padding : String
+    , backColor : String
     }
 
 

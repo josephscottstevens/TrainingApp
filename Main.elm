@@ -42,12 +42,16 @@ viewSelectedItem model =
                         , ( "margin-top", "20px" )
                         ]
 
-                selectedText =
+                textColor =
                     input [ value selectedNode.textColor, onInput (UpdateTextColor selectedNode) ] []
+
+                padding =
+                    input [ value selectedNode.padding, onInput (UpdatePadding selectedNode) ] []
             in
                 div [ selectStyle ]
                     [ div [] [ text ("Id: " ++ (toString selectedNode.id)) ]
-                    , div [] [ text "Text color: ", selectedText ]
+                    , div [] [ text "Text color: ", textColor ]
+                    , div [] [ text "Padding: ", padding ]
                     ]
 
         Nothing ->
@@ -71,7 +75,7 @@ viewDiv model nodeItem =
         divStyle =
             [ style
                 [ ( "border", "1px solid black" )
-                , ( "padding", "50px" )
+                , ( "padding", nodeItem.padding )
                 , ( "color", nodeItem.textColor )
                 , ( "text-align", "center" )
                 , if isActive then
@@ -95,39 +99,47 @@ type Msg
     | Drop NodeItem
     | SetSelected NodeItem
     | UpdateTextColor NodeItem String
+    | UpdatePadding NodeItem String
+    | UpdateBackColor NodeItem String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        DragStart dragNode ->
-            { model | dragNode = Just dragNode } ! []
+    let
+        updateNested tree =
+            { model | tree = tree } ! []
+    in
+        case msg of
+            DragStart dragNode ->
+                { model | dragNode = Just dragNode } ! []
 
-        DragEnd ->
-            { model | dragNode = Nothing, dropNode = Nothing } ! []
+            DragEnd ->
+                { model | dragNode = Nothing, dropNode = Nothing } ! []
 
-        DragEnter dropNode ->
-            { model | dropNode = Just dropNode } ! []
+            DragEnter dropNode ->
+                { model | dropNode = Just dropNode } ! []
 
-        DragLeave dragNode ->
-            { model | dragNode = Just dragNode } ! []
+            DragLeave dragNode ->
+                { model | dragNode = Just dragNode } ! []
 
-        Drop nodeItem ->
-            let
-                count =
-                    1 + Tree.count model.tree
-            in
-                { model | tree = Tree.insert nodeItem.id (defaultNode count) model.tree } ! []
+            Drop nodeItem ->
+                let
+                    count =
+                        1 + Tree.count model.tree
+                in
+                    { model | tree = Tree.insert nodeItem.id (defaultNode count) model.tree } ! []
 
-        SetSelected nodeItem ->
-            { model | selectedNode = Just nodeItem.id } ! []
+            SetSelected nodeItem ->
+                { model | selectedNode = Just nodeItem.id } ! []
 
-        UpdateTextColor nodeItem textColor ->
-            let
-                tree =
-                    Tree.update { nodeItem | textColor = textColor } model.tree
-            in
-                { model | tree = tree } ! []
+            UpdateTextColor nodeItem textColor ->
+                updateNested (Tree.update { nodeItem | textColor = textColor } model.tree)
+
+            UpdatePadding nodeItem padding ->
+                updateNested (Tree.update { nodeItem | padding = padding } model.tree)
+
+            UpdateBackColor nodeItem backColor ->
+                updateNested (Tree.update { nodeItem | backColor = backColor } model.tree)
 
 
 main : Program Never Model Msg
@@ -178,6 +190,8 @@ defaultNode : Int -> NodeItem
 defaultNode id =
     { id = id
     , textColor = "black"
+    , padding = "50px"
+    , backColor = "white"
     }
 
 
