@@ -25,8 +25,8 @@ view model =
     div []
         [ img (src url :: width 100 :: draggable (defaultNode -1)) []
         , viewSelectedItem model
-        , viewMiniTree "" model.tree
-        , viewDiv model model.tree
+        , Tree.toHtml (viewMiniTree "") model.tree
+        , Tree.toHtml (viewDiv model) model.tree
         ]
 
 
@@ -54,60 +54,43 @@ viewSelectedItem model =
             div [] []
 
 
-viewMiniTree : String -> Tree NodeItem -> Html Msg
-viewMiniTree dashes tree =
-    case tree of
-        Element node ->
-            div [] []
-
-        Node nodeItem nodeList ->
-            let
-                newDiv =
-                    div [] [ text (dashes ++ toString (nodeItem.id)) ]
-            in
-                div [] (newDiv :: List.map (viewMiniTree (dashes ++ "--")) nodeList)
+viewMiniTree : String -> NodeItem -> Html Msg
+viewMiniTree dashes nodeItem =
+    div [] [ text (dashes ++ toString (nodeItem.id)) ]
 
 
-viewDiv : Model -> Tree NodeItem -> Html Msg
-viewDiv model tree =
-    case tree of
-        Element node ->
-            div [] []
+viewDiv : Model -> NodeItem -> Html Msg
+viewDiv model nodeItem =
+    let
+        isActive =
+            Just nodeItem == model.dropNode
 
-        Node nodeItem nodeList ->
-            let
-                isActive =
-                    Just nodeItem == model.dropNode
+        isSelected =
+            Just nodeItem.id == model.selectedNode
 
-                isSelected =
-                    Just nodeItem.id == model.selectedNode
+        divStyle =
+            [ style
+                [ ( "border", "1px solid black" )
+                , ( "padding", "50px" )
+                , ( "color", nodeItem.textColor )
+                , ( "text-align", "center" )
+                , if isActive then
+                    ( "background-color", "cyan" )
+                  else if isSelected then
+                    ( "background-color", "lightyellow" )
+                  else
+                    ( "", "" )
+                ]
+            , onClick (SetSelected nodeItem)
+            ]
 
-                divStyle =
-                    [ style
-                        [ ( "border", "1px solid black" )
-                        , ( "padding", "50px" )
-                        , ( "color", nodeItem.textColor )
-                        , ( "text-align", "center" )
-                        , if isActive then
-                            ( "background-color", "cyan" )
-                          else if isSelected then
-                            ( "background-color", "lightyellow" )
-                          else
-                            ( "", "" )
-                        ]
-                    , onClick (SetSelected nodeItem)
-                    ]
-
-                children =
-                    if isActive then
-                        [ text (toString nodeItem.id), img (src url :: width 100 :: draggable nodeItem) [] ]
-                    else
-                        [ text (toString nodeItem.id) ]
-
-                newDiv =
-                    div (divStyle ++ droppable nodeItem) children
-            in
-                div [] (newDiv :: List.map (viewDiv model) nodeList)
+        children =
+            if isActive then
+                [ text (toString nodeItem.id), img (src url :: width 100 :: draggable nodeItem) [] ]
+            else
+                [ text (toString nodeItem.id) ]
+    in
+        div (divStyle ++ droppable nodeItem) children
 
 
 type Msg

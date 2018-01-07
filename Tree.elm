@@ -1,5 +1,7 @@
 module Tree exposing (..)
 
+import Html exposing (Html, div)
+
 
 type Tree a
     = Element a
@@ -80,3 +82,13 @@ map func tree =
 
         Node nodeItem treeList ->
             Node (func nodeItem) (List.map (map func) treeList)
+
+
+toHtml : (a -> Html msg) -> Tree a -> Html msg
+toHtml func tree =
+    case tree of
+        Element node ->
+            func node
+
+        Node node treeList ->
+            div [] [ func node, div [] (List.map (toHtml func) treeList) ]
