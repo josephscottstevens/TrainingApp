@@ -27,11 +27,17 @@ flatten tree =
             t :: List.concatMap flatten y
 
 
-insert : Int -> Tree -> Tree
-insert id tree =
+insert : Int -> NodeItem -> Tree -> Tree
+
+
+
+-- I think... not correct?
+
+
+insert position newNodeItem tree =
     let
         newNode =
-            Node (defaultNode id) [ Empty ]
+            Node newNodeItem [ Empty ]
     in
         case tree of
             Empty ->
@@ -61,27 +67,3 @@ map func tree =
 
         Node nodeItem treeList ->
             Node (func nodeItem) (List.map (map func) treeList)
-
-
-
--- Temp
-
-
-defaultNode : Int -> NodeItem
-defaultNode id =
-    { id = id
-    , textColor = "black"
-    }
-
-
-testNode : Tree
-testNode =
-    Node (defaultNode 0)
-        [ Node (defaultNode 1)
-            [ Node (defaultNode 1) [ Empty ]
-            , Node (defaultNode 2) [ Empty ]
-            , Node (defaultNode 3) [ Empty ]
-            ]
-        , Node (defaultNode 4) [ Empty ]
-        , Node (defaultNode 5) [ Empty ]
-        ]
