@@ -25,7 +25,7 @@ view model =
     div []
         [ img (src url :: width 100 :: draggable (defaultNode -1)) []
         , viewSelectedItem model
-        , Tree.toHtml (viewMiniTree "") model.tree
+        , div [] (model.tree |> Tree.flattenWithDepth 0 |> (List.map viewMiniTree))
         , Tree.toHtml (viewDiv model) model.tree
         ]
 
@@ -54,9 +54,9 @@ viewSelectedItem model =
             div [] []
 
 
-viewMiniTree : String -> NodeItem -> Html Msg
-viewMiniTree dashes nodeItem =
-    div [] [ text (dashes ++ toString (nodeItem.id)) ]
+viewMiniTree : ( NodeItem, Int ) -> Html Msg
+viewMiniTree ( nodeItem, depth ) =
+    div [] [ text (String.repeat depth "--" ++ toString (nodeItem.id)) ]
 
 
 viewDiv : Model -> NodeItem -> Html Msg

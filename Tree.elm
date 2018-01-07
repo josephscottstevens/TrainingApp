@@ -29,6 +29,16 @@ flatten tree =
             t :: List.concatMap flatten y
 
 
+flattenWithDepth : Int -> Tree b -> List ( b, Int )
+flattenWithDepth depth tree =
+    case tree of
+        Element node ->
+            [ ( node, depth ) ]
+
+        Node t y ->
+            ( t, depth ) :: List.concatMap (flattenWithDepth (depth + 1)) y
+
+
 maybeFind : Maybe Int -> Tree NodeItem -> Maybe NodeItem
 maybeFind maybeInt tree =
     case maybeInt of
@@ -84,7 +94,7 @@ map func tree =
             Node (func nodeItem) (List.map (map func) treeList)
 
 
-toHtml : (a -> Html msg) -> Tree a -> Html msg
+toHtml : (NodeItem -> Html msg) -> Tree NodeItem -> Html msg
 toHtml func tree =
     case tree of
         Element node ->
