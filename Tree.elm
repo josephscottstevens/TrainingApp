@@ -1,9 +1,9 @@
 module Tree exposing (..)
 
 
-type Tree
+type Tree a
     = Empty
-    | Node NodeItem (List Tree)
+    | Node a (List (Tree a))
 
 
 type alias NodeItem =
@@ -12,12 +12,12 @@ type alias NodeItem =
     }
 
 
-count : Tree -> Int
+count : Tree NodeItem -> Int
 count tree =
     List.length (flatten tree)
 
 
-flatten : Tree -> List NodeItem
+flatten : Tree b -> List b
 flatten tree =
     case tree of
         Empty ->
@@ -27,7 +27,7 @@ flatten tree =
             t :: List.concatMap flatten y
 
 
-insert : Int -> NodeItem -> Tree -> Tree
+insert : Int -> NodeItem -> Tree NodeItem -> Tree NodeItem
 insert position newNodeItem tree =
     let
         newNode =
@@ -44,7 +44,7 @@ insert position newNodeItem tree =
                     Node t (List.map (insert position newNodeItem) y)
 
 
-update : NodeItem -> Tree -> Tree
+update : NodeItem -> Tree NodeItem -> Tree NodeItem
 update nodeItem tree =
     map
         (\t ->
@@ -56,7 +56,7 @@ update nodeItem tree =
         tree
 
 
-map : (NodeItem -> NodeItem) -> Tree -> Tree
+map : (a -> b) -> Tree a -> Tree b
 map func tree =
     case tree of
         Empty ->

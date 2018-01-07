@@ -16,7 +16,7 @@ type alias Model =
     { dragNode : Maybe NodeItem
     , dropNode : Maybe NodeItem
     , selectedNode : Maybe NodeItem
-    , tree : Tree
+    , tree : Tree NodeItem
     }
 
 
@@ -25,9 +25,7 @@ view model =
     div []
         [ img (src url :: width 100 :: draggable (defaultNode -1)) []
         , viewSelectedItem model
-
-        --, div [] (map (viewDiv model) model.tree)
-        -- , renderHtml model model.tree
+        , Tree.map (viewDiv model) model.tree |> Tree.flatten |> div []
         ]
 
 
@@ -183,7 +181,7 @@ defaultNode id =
     }
 
 
-testNode : Tree
+testNode : Tree NodeItem
 testNode =
     Node (defaultNode 0)
         [ Node (defaultNode 1)
