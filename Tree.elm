@@ -13,6 +13,7 @@ type alias NodeItem =
     , textColor : String
     , padding : String
     , backColor : String
+    , border : String
     }
 
 

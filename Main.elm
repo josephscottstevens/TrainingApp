@@ -33,7 +33,7 @@ view model =
 viewSelectedItem : Model -> Html Msg
 viewSelectedItem model =
     case Tree.maybeFind model.selectedNode model.tree of
-        Just selectedNode ->
+        Just node ->
             let
                 selectStyle =
                     style
@@ -42,20 +42,15 @@ viewSelectedItem model =
                         , ( "margin-top", "20px" )
                         ]
 
-                textColor =
-                    input [ value selectedNode.textColor, onInput (UpdateTextColor selectedNode) ] []
-
-                padding =
-                    input [ value selectedNode.padding, onInput (UpdatePadding selectedNode) ] []
-
-                backColor =
-                    input [ value selectedNode.backColor, onInput (UpdateBackColor selectedNode) ] []
+                defaultInput val event =
+                    input [ value val, onInput (event node) ] []
             in
                 div [ selectStyle ]
-                    [ div [] [ text ("Id: " ++ (toString selectedNode.id)) ]
-                    , div [] [ text "Text color: ", textColor ]
-                    , div [] [ text "Padding: ", padding ]
-                    , div [] [ text "Backcolor: ", backColor ]
+                    [ div [] [ text ("Id: " ++ (toString node.id)) ]
+                    , div [] [ text "Text color: ", defaultInput node.textColor UpdateTextColor ]
+                    , div [] [ text "Padding: ", defaultInput node.padding UpdatePadding ]
+                    , div [] [ text "Backcolor: ", defaultInput node.backColor UpdateBackColor ]
+                    , div [] [ text "Border: ", defaultInput node.border UpdateBorder ]
                     ]
 
         Nothing ->
@@ -78,7 +73,7 @@ viewDiv model nodeItem =
 
         divStyle =
             [ style
-                [ ( "border", "1px solid black" )
+                [ ( "border", nodeItem.border )
                 , ( "padding", nodeItem.padding )
                 , ( "color", nodeItem.textColor )
                 , ( "text-align", "center" )
@@ -87,7 +82,7 @@ viewDiv model nodeItem =
                   else if isSelected then
                     ( "background-color", "lightyellow" )
                   else
-                    ( "", nodeItem.backColor )
+                    ( "background-color", nodeItem.backColor )
                 ]
             , onClick (SetSelected nodeItem)
             ]
@@ -105,6 +100,7 @@ type Msg
     | UpdateTextColor NodeItem String
     | UpdatePadding NodeItem String
     | UpdateBackColor NodeItem String
+    | UpdateBorder NodeItem String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -136,14 +132,17 @@ update msg model =
             SetSelected nodeItem ->
                 { model | selectedNode = Just nodeItem.id } ! []
 
-            UpdateTextColor nodeItem textColor ->
-                updateNested { nodeItem | textColor = textColor }
+            UpdateTextColor nodeItem t ->
+                updateNested { nodeItem | textColor = t }
 
-            UpdatePadding nodeItem padding ->
-                updateNested { nodeItem | padding = padding }
+            UpdatePadding nodeItem t ->
+                updateNested { nodeItem | padding = t }
 
-            UpdateBackColor nodeItem backColor ->
-                updateNested { nodeItem | backColor = backColor }
+            UpdateBackColor nodeItem t ->
+                updateNested { nodeItem | backColor = t }
+
+            UpdateBorder nodeItem t ->
+                updateNested { nodeItem | border = t }
 
 
 main : Program Never Model Msg
@@ -196,6 +195,7 @@ defaultNode id =
     , textColor = "black"
     , padding = "50px"
     , backColor = "white"
+    , border = "1px solid black"
     }
 
 
