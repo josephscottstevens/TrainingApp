@@ -25,7 +25,7 @@ view model =
     div []
         [ img (src url :: width 100 :: draggable (defaultNode -1)) []
         , viewSelectedItem model
-        , Tree.map (viewDiv model) model.tree |> Tree.flatten |> div []
+        , viewDiv model model.tree
         ]
 
 
@@ -53,38 +53,46 @@ viewSelectedItem model =
             div [] []
 
 
-viewDiv : Model -> NodeItem -> Html Msg
-viewDiv model nodeItem =
-    let
-        isActive =
-            Just nodeItem == model.dropNode
+viewDiv : Model -> Tree NodeItem -> Html Msg
+viewDiv model tree =
+    case tree of
+        Empty ->
+            div [] []
 
-        isSelected =
-            Just nodeItem == model.selectedNode
+        Node nodeItem nodeList ->
+            let
+                isActive =
+                    Just nodeItem == model.dropNode
 
-        divStyle =
-            [ style
-                [ ( "border", "1px solid black" )
-                , ( "padding", "50px" )
-                , ( "text-align", "center" )
-                , ( "text-color", nodeItem.textColor )
-                , if isActive then
-                    ( "background-color", "cyan" )
-                  else if isSelected then
-                    ( "background-color", "lightyellow" )
-                  else
-                    ( "", "" )
-                ]
-            , onClick (SetSelected nodeItem)
-            ]
+                isSelected =
+                    Just nodeItem == model.selectedNode
 
-        children =
-            if isActive then
-                [ text (toString nodeItem.id), img (src url :: width 100 :: draggable nodeItem) [] ]
-            else
-                [ text (toString nodeItem.id) ]
-    in
-        div (divStyle ++ droppable nodeItem) children
+                divStyle =
+                    [ style
+                        [ ( "border", "1px solid black" )
+                        , ( "padding", "50px" )
+                        , ( "text-align", "center" )
+                        , ( "text-color", nodeItem.textColor )
+                        , if isActive then
+                            ( "background-color", "cyan" )
+                          else if isSelected then
+                            ( "background-color", "lightyellow" )
+                          else
+                            ( "", "" )
+                        ]
+                    , onClick (SetSelected nodeItem)
+                    ]
+
+                children =
+                    if isActive then
+                        [ text (toString nodeItem.id), img (src url :: width 100 :: draggable nodeItem) [] ]
+                    else
+                        [ text (toString nodeItem.id) ]
+
+                newDiv =
+                    div (divStyle ++ droppable nodeItem) children
+            in
+                div [] (newDiv :: List.map (viewDiv model) nodeList)
 
 
 type Msg
@@ -185,10 +193,8 @@ testNode : Tree NodeItem
 testNode =
     Node (defaultNode 0)
         [ Node (defaultNode 1)
-            [ Node (defaultNode 1) []
-            , Node (defaultNode 2) []
-            , Node (defaultNode 3) []
+            [ Node (defaultNode 2) []
             ]
+        , Node (defaultNode 3) []
         , Node (defaultNode 4) []
-        , Node (defaultNode 5) []
         ]
