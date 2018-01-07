@@ -15,7 +15,7 @@ init =
 type alias Model =
     { dragNode : Maybe NodeItem
     , dropNode : Maybe NodeItem
-    , selectedNode : Maybe NodeItem
+    , selectedNode : Maybe Int
     , tree : Tree NodeItem
     }
 
@@ -32,7 +32,7 @@ view model =
 
 viewSelectedItem : Model -> Html Msg
 viewSelectedItem model =
-    case model.selectedNode of
+    case Tree.maybeFind model.selectedNode model.tree of
         Just selectedNode ->
             let
                 selectStyle =
@@ -80,7 +80,7 @@ viewDiv model tree =
                     Just nodeItem == model.dropNode
 
                 isSelected =
-                    Just nodeItem == model.selectedNode
+                    Just nodeItem.id == model.selectedNode
 
                 divStyle =
                     [ style
@@ -143,14 +143,14 @@ update msg model =
                 { model | tree = Tree.insert nodeItem.id (defaultNode count) model.tree } ! []
 
         SetSelected nodeItem ->
-            { model | selectedNode = Just nodeItem } ! []
+            { model | selectedNode = Just nodeItem.id } ! []
 
         UpdateTextColor nodeItem textColor ->
             let
                 tree =
                     Tree.update { nodeItem | textColor = textColor } model.tree
             in
-                { model | tree = tree, selectedNode = Just { nodeItem | textColor = textColor } } ! []
+                { model | tree = tree } ! []
 
 
 main : Program Never Model Msg

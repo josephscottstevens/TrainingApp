@@ -27,6 +27,26 @@ flatten tree =
             t :: List.concatMap flatten y
 
 
+maybeFind : Maybe Int -> Tree NodeItem -> Maybe NodeItem
+maybeFind maybeInt tree =
+    case maybeInt of
+        Just int ->
+            map
+                (\t ->
+                    if t.id == int then
+                        Just t
+                    else
+                        Nothing
+                )
+                tree
+                |> flatten
+                |> List.filterMap identity
+                |> List.head
+
+        Nothing ->
+            Nothing
+
+
 insert : Int -> NodeItem -> Tree NodeItem -> Tree NodeItem
 insert position newNodeItem tree =
     let
