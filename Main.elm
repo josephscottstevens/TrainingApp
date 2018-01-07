@@ -24,8 +24,8 @@ view : Model -> Html Msg
 view model =
     div []
         [ img (src url :: width 100 :: draggable (defaultNode -1)) []
-        , viewMiniTree "" model.tree
         , viewSelectedItem model
+        , viewMiniTree "" model.tree
         , viewDiv model model.tree
         ]
 
@@ -47,7 +47,7 @@ viewSelectedItem model =
             in
                 div [ selectStyle ]
                     [ div [] [ text ("Id: " ++ (toString selectedNode.id)) ]
-                    , div [] [ selectedText ]
+                    , div [] [ text "Text color: ", selectedText ]
                     ]
 
         Nothing ->
@@ -86,8 +86,8 @@ viewDiv model tree =
                     [ style
                         [ ( "border", "1px solid black" )
                         , ( "padding", "50px" )
+                        , ( "color", nodeItem.textColor )
                         , ( "text-align", "center" )
-                        , ( "text-color", nodeItem.textColor )
                         , if isActive then
                             ( "background-color", "cyan" )
                           else if isSelected then
@@ -146,11 +146,11 @@ update msg model =
             { model | selectedNode = Just nodeItem } ! []
 
         UpdateTextColor nodeItem textColor ->
-            model ! []
-
-
-
---Tree.update { nodeItem | textColor = textColor } model.tree ! []
+            let
+                tree =
+                    Tree.update { nodeItem | textColor = textColor } model.tree
+            in
+                { model | tree = tree, selectedNode = Just { nodeItem | textColor = textColor } } ! []
 
 
 main : Program Never Model Msg
