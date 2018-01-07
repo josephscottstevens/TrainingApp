@@ -2,7 +2,7 @@ module Tree exposing (..)
 
 
 type Tree a
-    = Empty
+    = Element a
     | Node a (List (Tree a))
 
 
@@ -20,8 +20,8 @@ count tree =
 flatten : Tree b -> List b
 flatten tree =
     case tree of
-        Empty ->
-            []
+        Element node ->
+            [ node ]
 
         Node t y ->
             t :: List.concatMap flatten y
@@ -49,19 +49,15 @@ maybeFind maybeInt tree =
 
 insert : Int -> NodeItem -> Tree NodeItem -> Tree NodeItem
 insert position newNodeItem tree =
-    let
-        newNode =
-            Node newNodeItem [ Empty ]
-    in
-        case tree of
-            Empty ->
-                newNode
+    case tree of
+        Element node ->
+            if node.id == position then
+                Node node [ Element newNodeItem ]
+            else
+                Element node
 
-            Node t y ->
-                if t.id == position then
-                    Node t (newNode :: y)
-                else
-                    Node t (List.map (insert position newNodeItem) y)
+        Node node y ->
+            Node node (List.map (insert position newNodeItem) y)
 
 
 update : NodeItem -> Tree NodeItem -> Tree NodeItem
@@ -79,8 +75,8 @@ update nodeItem tree =
 map : (a -> b) -> Tree a -> Tree b
 map func tree =
     case tree of
-        Empty ->
-            Empty
+        Element node ->
+            Element (func node)
 
         Node nodeItem treeList ->
             Node (func nodeItem) (List.map (map func) treeList)

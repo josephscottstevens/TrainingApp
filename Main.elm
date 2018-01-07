@@ -57,7 +57,7 @@ viewSelectedItem model =
 viewMiniTree : String -> Tree NodeItem -> Html Msg
 viewMiniTree dashes tree =
     case tree of
-        Empty ->
+        Element node ->
             div [] []
 
         Node nodeItem nodeList ->
@@ -71,7 +71,7 @@ viewMiniTree dashes tree =
 viewDiv : Model -> Tree NodeItem -> Html Msg
 viewDiv model tree =
     case tree of
-        Empty ->
+        Element node ->
             div [] []
 
         Node nodeItem nodeList ->
@@ -208,8 +208,8 @@ testNode : Tree NodeItem
 testNode =
     Node (defaultNode 0)
         [ Node (defaultNode 1)
-            [ Node (defaultNode 2) []
+            [ Element (defaultNode 2)
             ]
-        , Node (defaultNode 3) []
-        , Node (defaultNode 4) []
+        , Element (defaultNode 3)
+        , Element (defaultNode 4)
         ]
