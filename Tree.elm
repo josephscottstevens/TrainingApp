@@ -28,12 +28,6 @@ flatten tree =
 
 
 insert : Int -> NodeItem -> Tree -> Tree
-
-
-
--- I think... not correct?
-
-
 insert position newNodeItem tree =
     let
         newNode =
@@ -44,7 +38,10 @@ insert position newNodeItem tree =
                 newNode
 
             Node t y ->
-                Node t (newNode :: y)
+                if t.id == position then
+                    Node t (newNode :: y)
+                else
+                    Node t (List.map (insert position newNodeItem) y)
 
 
 update : NodeItem -> Tree -> Tree

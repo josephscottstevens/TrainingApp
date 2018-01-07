@@ -1,4 +1,4 @@
-module Main exposing (main)
+module Main exposing (..)
 
 import Html exposing (Html, Attribute, program, div, img, text, input)
 import Html.Attributes exposing (attribute, src, style, width, value)
@@ -26,7 +26,7 @@ view model =
         [ img (src url :: width 100 :: draggable (defaultNode -1)) []
         , viewSelectedItem model
 
-        --, div [] (Tree.map (viewDiv model) model.tree)
+        --, div [] (map (viewDiv model) model.tree)
         -- , renderHtml model model.tree
         ]
 
@@ -187,10 +187,10 @@ testNode : Tree
 testNode =
     Node (defaultNode 0)
         [ Node (defaultNode 1)
-            [ Node (defaultNode 1) [ Empty ]
-            , Node (defaultNode 2) [ Empty ]
-            , Node (defaultNode 3) [ Empty ]
+            [ Node (defaultNode 1) []
+            , Node (defaultNode 2) []
+            , Node (defaultNode 3) []
             ]
-        , Node (defaultNode 4) [ Empty ]
-        , Node (defaultNode 5) [ Empty ]
+        , Node (defaultNode 4) []
+        , Node (defaultNode 5) []
         ]
