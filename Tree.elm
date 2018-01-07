@@ -69,7 +69,10 @@ insert position newNodeItem tree =
                 Element node
 
         Node node y ->
-            Node node (List.map (insert position newNodeItem) y)
+            if node.id == position then
+                Node node (Element newNodeItem :: (List.map (insert position newNodeItem) y))
+            else
+                Node node (List.map (insert position newNodeItem) y)
 
 
 update : NodeItem -> Tree NodeItem -> Tree NodeItem
