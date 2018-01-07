@@ -47,11 +47,15 @@ viewSelectedItem model =
 
                 padding =
                     input [ value selectedNode.padding, onInput (UpdatePadding selectedNode) ] []
+
+                backColor =
+                    input [ value selectedNode.backColor, onInput (UpdateBackColor selectedNode) ] []
             in
                 div [ selectStyle ]
                     [ div [] [ text ("Id: " ++ (toString selectedNode.id)) ]
                     , div [] [ text "Text color: ", textColor ]
                     , div [] [ text "Padding: ", padding ]
+                    , div [] [ text "Backcolor: ", backColor ]
                     ]
 
         Nothing ->
@@ -83,7 +87,7 @@ viewDiv model nodeItem =
                   else if isSelected then
                     ( "background-color", "lightyellow" )
                   else
-                    ( "", "" )
+                    ( "", nodeItem.backColor )
                 ]
             , onClick (SetSelected nodeItem)
             ]
@@ -106,8 +110,8 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
-        updateNested tree =
-            { model | tree = tree } ! []
+        updateNested newItem =
+            { model | tree = Tree.update newItem model.tree } ! []
     in
         case msg of
             DragStart dragNode ->
@@ -133,13 +137,13 @@ update msg model =
                 { model | selectedNode = Just nodeItem.id } ! []
 
             UpdateTextColor nodeItem textColor ->
-                updateNested (Tree.update { nodeItem | textColor = textColor } model.tree)
+                updateNested { nodeItem | textColor = textColor }
 
             UpdatePadding nodeItem padding ->
-                updateNested (Tree.update { nodeItem | padding = padding } model.tree)
+                updateNested { nodeItem | padding = padding }
 
             UpdateBackColor nodeItem backColor ->
-                updateNested (Tree.update { nodeItem | backColor = backColor } model.tree)
+                updateNested { nodeItem | backColor = backColor }
 
 
 main : Program Never Model Msg
