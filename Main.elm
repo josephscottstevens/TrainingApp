@@ -24,6 +24,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ img (src url :: width 100 :: draggable (defaultNode -1)) []
+        , viewMiniTree "" model.tree
         , viewSelectedItem model
         , viewDiv model model.tree
         ]
@@ -51,6 +52,20 @@ viewSelectedItem model =
 
         Nothing ->
             div [] []
+
+
+viewMiniTree : String -> Tree NodeItem -> Html Msg
+viewMiniTree dashes tree =
+    case tree of
+        Empty ->
+            div [] []
+
+        Node nodeItem nodeList ->
+            let
+                newDiv =
+                    div [] [ text (dashes ++ toString (nodeItem.id)) ]
+            in
+                div [] (newDiv :: List.map (viewMiniTree (dashes ++ "--")) nodeList)
 
 
 viewDiv : Model -> Tree NodeItem -> Html Msg
@@ -125,7 +140,7 @@ update msg model =
                 count =
                     1 + Tree.count model.tree
             in
-                { model | tree = Tree.insert count nodeItem model.tree } ! []
+                { model | tree = Tree.insert nodeItem.id (defaultNode count) model.tree } ! []
 
         SetSelected nodeItem ->
             { model | selectedNode = Just nodeItem } ! []
