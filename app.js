@@ -8556,7 +8556,6 @@ var _user$project$Main$viewMiniTree = function (_p1) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Main$init = {ctor: '_Tuple2', _0: _user$project$Main$emptyModel, _1: _elm_lang$core$Platform_Cmd$none};
 var _user$project$Main$Model = F4(
 	function (a, b, c, d) {
 		return {dragNode: a, dropNode: b, selectedNode: c, tree: d};
@@ -8597,27 +8596,9 @@ var _user$project$Main$viewSelectedItem = function (model) {
 					},
 					{ctor: '[]'});
 			});
-		var selectStyle = _elm_lang$html$Html_Attributes$style(
-			{
-				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'float', _1: 'right'},
-				_1: {
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'margin-right', _1: '20px'},
-					_1: {
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'margin-top', _1: '20px'},
-						_1: {ctor: '[]'}
-					}
-				}
-			});
 		return A2(
 			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: selectStyle,
-				_1: {ctor: '[]'}
-			},
+			{ctor: '[]'},
 			{
 				ctor: '::',
 				_0: A2(
@@ -8830,40 +8811,104 @@ var _user$project$Main$draggable = function (dragNode) {
 var _user$project$Main$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
-		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$id('main'),
+			_1: {ctor: '[]'}
+		},
 		{
 			ctor: '::',
 			_0: A2(
-				_elm_lang$html$Html$img,
+				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$src(_user$project$Main$url),
+					_0: _elm_lang$html$Html_Attributes$id('controls'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$img,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$src(_user$project$Main$url),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$width(100),
+								_1: _user$project$Main$draggable(
+									_user$project$Main$defaultNode(-1))
+							}
+						},
+						{ctor: '[]'}),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$width(100),
-						_1: _user$project$Main$draggable(
-							_user$project$Main$defaultNode(-1))
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$width(100),
+								_1: _user$project$Main$draggable(
+									_user$project$Main$defaultNode(-2))
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Block'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
 					}
-				},
-				{ctor: '[]'}),
+				}),
 			_1: {
 				ctor: '::',
-				_0: _user$project$Main$viewSelectedItem(model),
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$id('selected'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _user$project$Main$viewSelectedItem(model),
+						_1: {ctor: '[]'}
+					}),
 				_1: {
 					ctor: '::',
 					_0: A2(
 						_elm_lang$html$Html$div,
-						{ctor: '[]'},
-						A2(
-							_elm_lang$core$List$map,
-							_user$project$Main$viewMiniTree,
-							A2(_user$project$Tree$flattenWithDepth, 0, model.tree))),
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$id('minimap'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{ctor: '[]'},
+								A2(
+									_elm_lang$core$List$map,
+									_user$project$Main$viewMiniTree,
+									A2(_user$project$Tree$flattenWithDepth, 0, model.tree))),
+							_1: {ctor: '[]'}
+						}),
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_user$project$Tree$toHtml,
-							_user$project$Main$viewDiv(model),
-							model.tree),
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$id('body'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_user$project$Tree$toHtml,
+									_user$project$Main$viewDiv(model),
+									model.tree),
+								_1: {ctor: '[]'}
+							}),
 						_1: {ctor: '[]'}
 					}
 				}
@@ -8872,7 +8917,10 @@ var _user$project$Main$view = function (model) {
 };
 var _user$project$Main$main = _elm_lang$html$Html$program(
 	{
-		init: _user$project$Main$init,
+		init: A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_user$project$Main$emptyModel,
+			{ctor: '[]'}),
 		update: _user$project$Main$update,
 		view: _user$project$Main$view,
 		subscriptions: _elm_lang$core$Basics$always(_elm_lang$core$Platform_Sub$none)

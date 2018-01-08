@@ -1,15 +1,10 @@
 module Main exposing (..)
 
 import Html exposing (Html, Attribute, program, div, img, text, input)
-import Html.Attributes exposing (attribute, src, style, width, value)
+import Html.Attributes exposing (attribute, src, style, width, value, id)
 import Html.Events exposing (on, onWithOptions, onClick, onInput)
 import Tree exposing (Tree(..), NodeItem)
 import Json.Decode as Json
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( emptyModel, Cmd.none )
 
 
 type alias Model =
@@ -22,11 +17,20 @@ type alias Model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ img (src url :: width 100 :: draggable (defaultNode -1)) []
-        , viewSelectedItem model
-        , div [] (model.tree |> Tree.flattenWithDepth 0 |> (List.map viewMiniTree))
-        , Tree.toHtml (viewDiv model) model.tree
+    div [ id "main" ]
+        [ div [ id "controls" ]
+            [ img (src url :: width 100 :: draggable (defaultNode -1)) []
+            , div (width 100 :: draggable (defaultNode -2)) [ text "Block" ]
+            ]
+        , div [ id "selected" ]
+            [ viewSelectedItem model
+            ]
+        , div [ id "minimap" ]
+            [ div [] (model.tree |> Tree.flattenWithDepth 0 |> (List.map viewMiniTree))
+            ]
+        , div [ id "body" ]
+            [ Tree.toHtml (viewDiv model) model.tree
+            ]
         ]
 
 
@@ -35,17 +39,10 @@ viewSelectedItem model =
     case Tree.maybeFind model.selectedNode model.tree of
         Just node ->
             let
-                selectStyle =
-                    style
-                        [ ( "float", "right" )
-                        , ( "margin-right", "20px" )
-                        , ( "margin-top", "20px" )
-                        ]
-
                 defaultInput val event =
                     input [ value val, onInput (event node) ] []
             in
-                div [ selectStyle ]
+                div []
                     [ div [] [ text ("Id: " ++ (toString node.id)) ]
                     , div [] [ text "Text color: ", defaultInput node.textColor UpdateTextColor ]
                     , div [] [ text "Padding: ", defaultInput node.padding UpdatePadding ]
@@ -148,7 +145,7 @@ update msg model =
 main : Program Never Model Msg
 main =
     program
-        { init = init
+        { init = emptyModel ! []
         , update = update
         , view = view
         , subscriptions = always Sub.none
